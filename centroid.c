@@ -53,4 +53,34 @@ int main(){
     printf("Centroid of predefined points: ");
     printPoint(&centroid);
     printf("\n\n");
+
+    int m;
+
+      if (m > 0) {
+        Point *userPoints = (Point *) malloc(m * sizeof(Point));
+        if (userPoints == NULL) {
+            fprintf(stderr, "Memory allocation failed!\n");
+            return 1;
+        }
+
+        for (int i = 0; i < m; i++) {
+            printf("Enter point %d (x y): ", i + 1);
+            scanf("%lf %lf", &userPoints[i].x, &userPoints[i].y);
+        }
+
+        printf("User-defined points:\n");
+        for (int i = 0; i < m; i++) {
+            printPoint(&userPoints[i]);
+            printf("\n");
+        }
+
+        Point userCentroid = computeCentroid(userPoints, m);
+        printf("Centroid of user-defined points: ");
+        printPoint(&userCentroid);
+        printf("\n");
+
+        free(userPoints);
+    }
+
+    return 0;
 }
