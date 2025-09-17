@@ -1,0 +1,14 @@
+# Build directories
+/build/
+*.o
+*.obj
+*.exe
+*.dll
+*.so
+
+# CMake cache
+CMakeCache.txt
+CMakeFiles/
+
+# VSCode
+.vscode/
