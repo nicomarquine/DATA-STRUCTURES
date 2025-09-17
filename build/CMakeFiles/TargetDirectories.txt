@@ -1,0 +1,3 @@
+D:/Nico/UNIVERSIDAD/DATA EST/build/CMakeFiles/BasicExample.dir
+D:/Nico/UNIVERSIDAD/DATA EST/build/CMakeFiles/edit_cache.dir
+D:/Nico/UNIVERSIDAD/DATA EST/build/CMakeFiles/rebuild_cache.dir
