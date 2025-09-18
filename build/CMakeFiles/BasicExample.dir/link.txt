@@ -1,3 +1,0 @@
-D:\Programas\CMake\bin\cmake.exe -E rm -f CMakeFiles\BasicExample.dir/objects.a
-C:\MinGW\bin\ar.exe qc CMakeFiles\BasicExample.dir/objects.a @CMakeFiles\BasicExample.dir\objects1.rsp
-C:\MinGW\bin\gcc.exe -g -Wl,--whole-archive CMakeFiles\BasicExample.dir/objects.a -Wl,--no-whole-archive -o BasicExample.exe -Wl,--out-implib,libBasicExample.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\BasicExample.dir\linkLibs.rsp

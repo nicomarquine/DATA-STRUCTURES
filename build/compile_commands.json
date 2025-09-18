@@ -1,8 +1,0 @@
-[
-{
-  "directory": "D:/Nico/UNIVERSIDAD/DATA-STRUCTURES/build",
-  "command": "C:\\MinGW\\bin\\gcc.exe   -g -o CMakeFiles\\BasicExample.dir\\main.c.obj -c D:\\Nico\\UNIVERSIDAD\\DATA-STRUCTURES\\main.c",
-  "file": "D:/Nico/UNIVERSIDAD/DATA-STRUCTURES/main.c",
-  "output": "CMakeFiles/BasicExample.dir/main.c.obj"
-}
-]

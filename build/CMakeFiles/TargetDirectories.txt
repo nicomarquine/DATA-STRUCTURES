@@ -1,3 +1,0 @@
-D:/Nico/UNIVERSIDAD/DATA-STRUCTURES/build/CMakeFiles/BasicExample.dir
-D:/Nico/UNIVERSIDAD/DATA-STRUCTURES/build/CMakeFiles/edit_cache.dir
-D:/Nico/UNIVERSIDAD/DATA-STRUCTURES/build/CMakeFiles/rebuild_cache.dir

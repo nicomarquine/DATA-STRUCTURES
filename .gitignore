@@ -14,4 +14,4 @@ CMakeFiles/
 .vscode/
 
 # Build
-/build/
+build/
