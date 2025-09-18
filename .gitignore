@@ -12,3 +12,6 @@ CMakeFiles/
 
 # VSCode
 .vscode/
+
+# Build
+/build/
