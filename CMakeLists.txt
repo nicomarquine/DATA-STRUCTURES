@@ -3,4 +3,4 @@ project(
   BasicExample
   VERSION 1.0
   LANGUAGES C)
-add_executable(BasicExample main.c)
+  add_executable(BasicExample main.c)
