@@ -82,6 +82,28 @@ void LinkedStructure_append(struct Node** p_p_first, int element) {
 
 void LinkedStructure_insert(struct Node** p_p_first, size_t index, int element) {
   // todo
+
+  struct Node* p_new = malloc(sizeof(struct Node));
+    assert(p_new != NULL && "Memory allocation failed");
+    p_new-> element = element;
+
+  struct Node* p_previous = NULL;
+  struct Node* p_current = *p_p_first;
+  
+  for(size_t i = 0; i < index; i++){
+    assert(p_current != NULL && "Invalid index");
+    p_previous = p_current;
+    p_current = p_current -> p_next;
+  }
+
+  if (p_previous == NULL) {
+        p_new->p_next = *p_p_first;
+        *p_p_first = p_new;
+    } else {
+        // Insertar en medio o al final
+        p_new->p_next = p_current;
+        p_previous->p_next = p_new;
+    }
 }
 
 int LinkedStructure_get(const struct Node* p_first, size_t index) {
