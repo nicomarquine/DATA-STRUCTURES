@@ -39,14 +39,14 @@ static void validateIndex(const struct LinkedList* p_list, size_t index) {
 }
 
 struct LinkedList* LinkedList_new() {
-  struct LinkedList* p_list = malloc(sizeof(struct LinkedList));
+  struct LinkedList* p_list = malloc(sizeof(struct Node));
   assert(p_list != NULL && "LinkedList_new: out of memory");
   p_list->p_first = NULL;
   p_list->p_last = NULL;
   p_list->size = 0;
-  
-  return p_list;
+  return p_list;
 }
+
 
 struct LinkedList* LinkedList_copyOf(const struct LinkedList* p_list) {
   assert(p_list != NULL && "LinkedList_copyOf: invalid list");
@@ -68,15 +68,15 @@ size_t LinkedList_size(const struct LinkedList* p_list) {
 
 void LinkedList_prepend(struct LinkedList* p_list, int element) {
   assert(p_list != NULL && "LinkedList_prepend: invalid list");
-  
-  struct Node* p_node = Node_new(element, p_list -> p_first);
-  p_list -> p_first = p_node;
-  if(p_list -> size == 0){
-    p_list -> p_last;
+  struct Node *p_node = Node_new(element,p_list->p_first);
+  p_list->p_first = p_node;
+  if(p_list->size == 0){
+    // the list was empty
+    p_list->p_last = p_node;
   }
-  p_list -> size++;
-  
+  p_list->size++;
 }
+
 
 void LinkedList_append(struct LinkedList* p_list, int element) {
   assert(p_list != NULL && "LinkedList_append: invalid list");
@@ -176,7 +176,20 @@ void LinkedList_print(const struct LinkedList* p_list) {
 
 void LinkedList_clear(struct LinkedList* p_list) {
   assert(p_list != NULL && "LinkedList_clear: invalid list");
-   // todo
+  struct Node* p_current = p_list->p_first;
+
+  while(p_current != NULL){
+    struct Node* p_delete = p_current;
+    p_current = p_current->p_next;
+    Node_free(&p_delete);
+    /*
+    struct Node* p_next = p_current->p_next;
+    Node_free(&p_current);
+    p_current = p_next; */
+  }
+  p_list->p_first = NULL;
+  p_list->p_last = NULL;
+  p_list -> size = 0;
 }
 
 void LinkedList_free(struct LinkedList** p_p_list) {
