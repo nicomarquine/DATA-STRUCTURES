@@ -196,3 +196,27 @@ void LinkedList_free(struct LinkedList** p_p_list) {
   assert(p_p_list != NULL && "LinkedList_free: invalid p_p_list");
   // todo
 }
+
+void LinkedList_insert_sorted(struct LinkedList *p_list, int element){
+  assert(p_list != NULL && "LinkedList_insert_sorted: p_list is NULL");
+  struct Node* p_current = p_list -> p_first;
+  struct Node* p_prevoius = NULL;
+
+  while(p_current != NULL && p_current -> element <= element){
+    p_prevoius = p_current;
+    p_current = p_current -> p_next;
+  }
+  struct Node* p_node = Node_new(element, p_current);
+  if(p_prevoius == NULL){
+    p_list -> p_first = p_node;
+    if(p_list -> size == 0){
+      p_list -> p_last = p_node;
+    }
+  }else {
+    p_prevoius -> p_next = p_node;
+    if(p_current == p_list -> p_last){
+      p_list -> p_last= p_node;
+    }
+  }
+  p_list -> size++;
+}

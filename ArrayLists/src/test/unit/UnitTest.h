@@ -1,4 +1,3 @@
-
 /*============================================================================*/
 /* Unit Test Framework                                                        */
 /* Pepe Gallardo, 2025                                                        */
@@ -73,7 +72,6 @@
 /*   }                                                                        */
 /*============================================================================*/
 
-
 #ifndef UNIT_TEST_H
 #define UNIT_TEST_H
 
@@ -86,65 +84,6 @@
 #include <math.h>
 #include <time.h>
 #include <errno.h>
-
-// --- FIX 1: struct timespec ya definido en MinGW ---
-// Solo declarar timespec si no existe
-#if !defined(_TIMESPEC_DEFINED) && !defined(_STRUCT_TIMESPEC)
-#define _TIMESPEC_DEFINED
-struct timespec {
-    time_t tv_sec;
-    long   tv_nsec;
-};
-#endif
-
-// --- FIX 2: CLOCK_MONOTONIC no existe en MinGW ---
-#ifndef CLOCK_MONOTONIC
-#define CLOCK_MONOTONIC 1
-#endif
-
-// --- FIX 3: ENABLE_VIRTUAL_TERMINAL_PROCESSING no existe en MinGW ---
-#ifndef ENABLE_VIRTUAL_TERMINAL_PROCESSING
-#define ENABLE_VIRTUAL_TERMINAL_PROCESSING 0x0004
-#endif
-
-// Colores para la consola
-#define COLOR_RESET   "\x1b[0m"
-#define COLOR_RED     "\x1b[31m"
-#define COLOR_GREEN   "\x1b[32m"
-#define COLOR_YELLOW  "\x1b[33m"
-#define COLOR_BLUE    "\x1b[34m"
-
-// Buffer estándar
-#define BUF_SIZE 128
-
-// --- FIX 4: usar %zu en vez de %zu ---
-#define SNPRINTF_SIZE_T(buf, fmt, val) \
-    snprintf(buf, BUF_SIZE, fmt, (unsigned long)(val))
-
-// Ejemplo de macro corregida
-#define ASSERT_AND_MARK_MEMORY_CHANGES_BYTES(code_block)         \
-    do {                                                         \
-        size_t expected_bytes_allocd = 0;                        \
-        size_t expected_bytes_freed = 0;                         \
-        size_t _bytes_allocd_delta_ = 0;                         \
-        size_t _bytes_freed_delta_ = 0;                          \
-        char _ba_exp_buf_[BUF_SIZE];                             \
-        char _ba_act_buf_[BUF_SIZE];                             \
-        char _bf_exp_buf_[BUF_SIZE];                             \
-        char _bf_act_buf_[BUF_SIZE];                             \
-        code_block;                                              \
-        SNPRINTF_SIZE_T(_ba_exp_buf_, "%zu bytes", expected_bytes_allocd); \
-        SNPRINTF_SIZE_T(_ba_act_buf_, "%zu bytes", _bytes_allocd_delta_); \
-        SNPRINTF_SIZE_T(_bf_exp_buf_, "%zu bytes", expected_bytes_freed); \
-        SNPRINTF_SIZE_T(_bf_act_buf_, "%zu bytes", _bytes_freed_delta_); \
-    } while (0)
-
-// -------------------------------------------------------
-// 🔽 Aquí puedes seguir con el resto de tu UnitTest.h tal
-// cual estaba antes (funciones de init, RUN_ALL_TESTS, etc).
-// -------------------------------------------------------
-
-#endif // UNIT_TEST_H
 
 /*============================================================================*/
 /* SECTION 0: MODE SELECTION & FRAMEWORK CONSTANTS                            */
@@ -1699,7 +1638,7 @@ static _UT_TestResult *_UT_run_process_win(_UT_TestInfo *test, const char *execu
     SECURITY_ATTRIBUTES sa = {sizeof(SECURITY_ATTRIBUTES), NULL, TRUE};
     if (!CreatePipe(&h_read, &h_write, &sa, 0))
     {
-        _UT_FRAMEWORK_ERROR("CreatePipe failed with error code %zu", GetLastError());
+        _UT_FRAMEWORK_ERROR("CreatePipe failed with error code %lu", GetLastError());
         return NULL;
     }
 
@@ -1714,7 +1653,7 @@ static _UT_TestResult *_UT_run_process_win(_UT_TestInfo *test, const char *execu
 
     if (!CreateProcessA(NULL, command_line, NULL, NULL, TRUE, 0, NULL, NULL, &si, &pi))
     {
-        _UT_FRAMEWORK_ERROR("CreateProcessA failed with error code %zu", GetLastError());
+        _UT_FRAMEWORK_ERROR("CreateProcessA failed with error code %lu", GetLastError());
         CloseHandle(h_read);
         CloseHandle(h_write);
         return NULL;
@@ -1802,7 +1741,7 @@ static _UT_TestResult *_UT_run_process_win(_UT_TestInfo *test, const char *execu
 
             // 1. Write the fixed part of the message first.
             int offset = snprintf(details, sizeof(details),
-                                  "Test aborted: framework error (code %zu): %s.\n---\n",
+                                  "Test aborted: framework error (code %lu): %s.\n---\n",
                                   exit_code, reason);
 
             // 2. Calculate remaining space.
@@ -2643,7 +2582,7 @@ static void _UT_check_for_leaks(void)
         {
             leaks_found = 1;
             char leak_info[256];
-            snprintf(leak_info, sizeof(leak_info), "\n - %zu bytes allocated at %s:%d",(unsigned long)current->size, current->file, current->line);
+            snprintf(leak_info, sizeof(leak_info), "\n      - %zu bytes allocated at %s:%d", current->size, current->file, current->line);
             strncat(leak_details, leak_info, sizeof(leak_details) - strlen(leak_details) - 1);
         }
     }
@@ -2776,3 +2715,5 @@ void _UT_free(void *ptr, const char *file, int line)
 #ifdef __GNUC__
 #pragma GCC diagnostic pop
 #endif
+
+#endif // UNIT_TEST_H
