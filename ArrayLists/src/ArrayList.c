@@ -39,12 +39,12 @@ void ArrayList_free(struct ArrayList** p_p_list) {
 // Constructor for a new struct ArrayList* with same elements as given ArrayList.
 struct ArrayList* ArrayList_copyOf(const struct ArrayList* p_list) {
   assert(p_list != NULL && "ArrayList_copyOf: list is NULL");
-  struct ArrayList* p_list_copy = ArrayList_new(p_list -> elements);
+  struct ArrayList* p_list_copy = ArrayList_new(p_list -> capacity);
   p_list_copy -> size = p_list -> size;
   for (size_t i = 0; i < p_list -> size; i++){
     p_list_copy -> elements[i] = p_list -> elements[i];
   }
-  return NULL;
+  return p_list_copy;
 }
 
 // Checks if given ArrayList is empty.
