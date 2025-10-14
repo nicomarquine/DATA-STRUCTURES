@@ -166,14 +166,14 @@ public class ArrayQueue<T> extends AbstractQueue<T> implements Queue<T> {
    * <p> Time complexity: O(1)
    */
   @Override
-  public boolean isEmpty() { throw new UnsupportedOperationException("Not implemented yet"); }
+  public boolean isEmpty() { return size == 0; }
 
   /**
    * {@inheritDoc}
    * <p> Time complexity: O(1)
    */
   @Override
-  public int size() { throw new UnsupportedOperationException("Not implemented yet"); }
+  public int size() { return size; }
 
   /**
    * Advances an index, wrapping around the array if necessary.
@@ -212,28 +212,54 @@ public class ArrayQueue<T> extends AbstractQueue<T> implements Queue<T> {
    * underlying array needs to be resized.
    */
   @Override
-  public void enqueue(T element) { throw new UnsupportedOperationException("Not implemented yet"); }
+  public void enqueue(T element) {
+    ensureCapacity();
+    last = advance(last);
+    elements[last] = element;
+    size++;
+  }
 
   /**
    * {@inheritDoc}
    * <p> Time complexity: O(1)
    */
   @Override
-  public T first() { throw new UnsupportedOperationException("Not implemented yet"); }
+  public T first() {
+    if (isEmpty()){
+      throw new EmptyQueueException("First on empty queue");
+    }
+    return elements[first];
+  }
 
   /**
    * {@inheritDoc}
    * <p> Time complexity: O(1)
    */
   @Override
-  public void dequeue() { throw new UnsupportedOperationException("Not implemented yet"); }
+  public void dequeue() {
+    if (isEmpty()){
+      throw new EmptyQueueException("Dequeue on empty queue");
+    }
+    elements[first] = null;
+    first = advance(first);
+    size--;
+  }
 
   /**
    * {@inheritDoc}
    * <p> Time complexity: O(n)
    */
   @Override
-  public void clear() { throw new UnsupportedOperationException("Not implemented yet"); }
+  public void clear() {
+    int current = first;
+    for (int i = 0; i < size; i++) {
+      elements[current] = null;
+      current = advance(current);
+    }
+    size = 0;
+    last = elements.length - 1;
+    size = 0;
+  }
 
   /**
    * Provides an iterable that traverses the elements from the front to the rear of the queue.
