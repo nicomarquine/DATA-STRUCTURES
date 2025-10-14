@@ -139,42 +139,72 @@ public class LinkedQueue<T> extends AbstractQueue<T> implements Queue<T> {
    * <p> Time complexity: O(1)
    */
   @Override
-  public boolean isEmpty() { throw new UnsupportedOperationException("Not implemented yet"); }
+  public boolean isEmpty() { return first == null; }
 
   /**
    * {@inheritDoc}
    * <p> Time complexity: O(1)
    */
   @Override
-  public int size() { throw new UnsupportedOperationException("Not implemented yet"); }
+  public int size() {return size; }
 
   /**
    * {@inheritDoc}
    * <p> Time complexity: O(1)
    */
   @Override
-  public T first() { throw new UnsupportedOperationException("Not implemented yet"); }
+  public T first() {
+    if (isEmpty()){
+      throw new EmptyQueueException("first on empty queue");
+    }
+    return first.element;
+
+  }
 
   /**
    * {@inheritDoc}
    * <p> Time complexity: O(1)
    */
   @Override
-  public void dequeue() { throw new UnsupportedOperationException("Not implemented yet"); }
+  public void dequeue() {
+    if (isEmpty()){
+      throw new EmptyQueueException("dequeue on empty queue");
+    }
+    first = first.next;
+    size--;
+    if(size == 0){
+      //queue had 1 element
+      last = null;
+    }
+  }
 
   /**
    * {@inheritDoc}
    * <p> Time complexity: O(1)
    */
   @Override
-  public void enqueue(T element) { throw new UnsupportedOperationException("Not implemented yet"); }
+  public void enqueue(T element) {
+    Node<T> node = new Node<>(element, null);
+    if (isEmpty()){
+      first = node;
+    }else{
+      last.next = node;
+    }
+    size++;
+    last = node;
+  }
 
   /**
    * {@inheritDoc}
    * <p> Time complexity: O(1)
    */
   @Override
-  public void clear() { throw new UnsupportedOperationException("Not implemented yet"); }
+  public void clear() {
+    first = null;
+    last = null;
+    size = 0;
+
+  }
 
   /**
    * Provides an iterable that traverses the elements from the front to the rear of the queue.

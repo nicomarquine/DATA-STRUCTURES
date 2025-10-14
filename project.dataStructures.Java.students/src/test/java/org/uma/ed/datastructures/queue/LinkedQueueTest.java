@@ -9,7 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.uma.ed.datastructures.list.ArrayList;
+import org.uma.ed.datastructures.list.JDKArrayList;
 import org.uma.ed.datastructures.list.List;
 
 @DisplayName("Test cases for class LinkedQueue")
@@ -58,7 +58,7 @@ class LinkedQueueTest {
     @DisplayName("from an iterable (list) of values using the from() method")
     void givenAListOfValuesWhenTheFromMethodIsCalledThenAnLinkedQueueIsCreated() {
       // Arrange
-      List<Integer> initialValues = ArrayList.of(1, 2, 3, 4, 5);
+      List<Integer> initialValues = JDKArrayList.of(1, 2, 3, 4, 5);
       Queue<Integer> Queue = LinkedQueue.from(initialValues);
 
       // Assert
@@ -235,7 +235,7 @@ class LinkedQueueTest {
     @DisplayName("if the queue has two elements, the queue contains the right sequence of elements")
     void givenAQueueWithTwoElementsWhenEnqueueThenTheQueueContainsTheRightSequenceOfElements() {
       // Arrange
-      List<Double> elements = ArrayList.of(6.0, -1.0);
+      List<Double> elements = JDKArrayList.of(6.0, -1.0);
       LinkedQueue<Double> queue = LinkedQueue.from(elements);
 
       // Act
@@ -243,8 +243,8 @@ class LinkedQueueTest {
       queue.enqueue(newElement);
 
       // Assert
-      List<Double> expectedElements = ArrayList.of(6.0, -1.0, newElement);
-      List<Double> queueContents = ArrayList.from(queue.elements());
+      List<Double> expectedElements = JDKArrayList.of(6.0, -1.0, newElement);
+      List<Double> queueContents = JDKArrayList.from(queue.elements());
       assertEquals(expectedElements, queueContents);
     }
   }
@@ -365,7 +365,7 @@ class LinkedQueueTest {
 
       // Assert
       assertEquals(3, queue.size());
-      assertEquals(ArrayList.of(5.0, 8.1, 0.5e15), ArrayList.from(queue.elements()));
+      assertEquals(JDKArrayList.of(5.0, 8.1, 0.5e15), JDKArrayList.from(queue.elements()));
     }
   }
 }
