@@ -1,0 +1,336 @@
+package org.uma.ed.datastructures.bag;
+
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.NoSuchElementException;
+
+/**
+ * An implementation of the {@link SortedBag} interface using a sorted, singly-linked list.
+ * <p>
+ * This implementation stores unique elements in sorted nodes, with each node maintaining a
+ * count of the element's occurrences. This design allows for duplicates while keeping the
+ * underlying structure sorted.
+ * <p>
+ * Performance characteristics are typical for a linked list: operations that require
+ * finding an element ({@code insert}, {@code delete}, {@code occurrences}) have a linear
+ * time complexity O(n). However, accessing the minimum and maximum elements is O(1)
+ * due to the maintenance of `first` and `last` pointers.
+ *
+ * @param <T> The type of elements held in this sorted bag.
+ *
+ * @author Pablo López, Pepe Gallardo, Data Structures, Grado en Informática. UMA.
+ */
+public class SortedLinkedBag<T> extends AbstractSortedBag<T> implements SortedBag<T> {
+
+  /**
+   * Internal class representing a node in the sorted linked structure.
+   * Each node stores a unique element, its number of occurrences, and a link to the next node.
+   */
+  private static final class Node<E> {
+    E element;
+    int occurrences;
+    Node<E> next;
+
+    Node(E element, int occurrences, Node<E> next) {
+      this.element = element;
+      this.occurrences = occurrences;
+      this.next = next;
+    }
+  }
+
+  /*
+   * INVARIANT:
+   *  - The linked structure starting at `first` maintains nodes in ascending order of their `element`.
+   *  - Each node contains a unique element; no two nodes store the same element.
+   *  - Each node's `occurrences` count is always greater than zero.
+   *  - `first` points to the first node (smallest element) or is null if the bag is empty.
+   *  - `last` points to the last node (largest element) or is null if the bag is empty.
+   *  - `size` stores the total number of elements in the bag (the sum of all occurrences).
+   */
+
+  private final Comparator<T> comparator;
+  private Node<T> first;
+  private Node<T> last;
+  private int size;
+
+  /**
+   * Constructs an empty {@code SortedLinkedBag} with a specified comparator.
+   * <p> Time complexity: O(1)
+   */
+  public SortedLinkedBag(Comparator<T> comparator) {
+    this.comparator = comparator;
+    this.first = null;
+    this.last = null;
+    this.size = 0;
+  }
+
+  /**
+   * Creates an empty {@code SortedLinkedBag} with a specified comparator.
+   * <p> Time complexity: O(1)
+   */
+  public static <T> SortedLinkedBag<T> empty(Comparator<T> comparator) {
+    return new SortedLinkedBag<>(comparator);
+  }
+
+  /**
+   * Creates an empty {@code SortedLinkedBag} with natural ordering.
+   * <p> Time complexity: O(1)
+   */
+  public static <T extends Comparable<? super T>> SortedLinkedBag<T> empty() {
+    return new SortedLinkedBag<T>(Comparator.naturalOrder());
+  }
+
+  /**
+   * Creates a new {@code SortedLinkedBag} from the given elements.
+   * <p> Time complexity: O(n^2) in the worst case, due to repeated linear-time insertions.
+   */
+  @SafeVarargs
+  public static <T> SortedLinkedBag<T> of(Comparator<T> comparator, T... elements) {
+    SortedLinkedBag<T> bag = new SortedLinkedBag<>(comparator);
+    bag.insert(elements);
+    return bag;
+  }
+
+  /**
+   * Creates a new {@code SortedLinkedBag} from the given elements with natural ordering.
+   * <p> Time complexity: O(n^2)
+   */
+  @SafeVarargs
+  public static <T extends Comparable<? super T>> SortedLinkedBag<T> of(T... elements) {
+    return of(Comparator.naturalOrder(), elements);
+  }
+
+  /**
+   * Creates a new {@code SortedLinkedBag} from an iterable.
+   * <p> Time complexity: O(n^2)
+   */
+  public static <T> SortedLinkedBag<T> from(Comparator<T> comparator, Iterable<T> iterable) {
+    SortedLinkedBag<T> bag = new SortedLinkedBag<>(comparator);
+    for (T element : iterable) {
+      bag.insert(element);
+    }
+    return bag;
+  }
+
+  /**
+   * Creates a new {@code SortedLinkedBag} from an iterable with natural ordering.
+   * <p> Time complexity: O(n^2)
+   */
+  public static <T extends Comparable<? super T>> SortedLinkedBag<T> from(Iterable<T> iterable) {
+    return from(Comparator.naturalOrder(), iterable);
+  }
+
+  /**
+   * Creates a new {@code SortedLinkedBag} containing the same elements as the given sorted bag.
+   * <p>
+   * This is an efficient O(n) operation that leverages the sorted nature of the source bag.
+   * <p> Time complexity: O(n)
+   */
+  public static <T> SortedLinkedBag<T> copyOf(SortedBag<T> that) {
+    SortedLinkedBag<T> copy = new SortedLinkedBag<>(that.comparator());
+    // Since `that` is sorted, we can use the efficient append operation.
+    for (T element : that) {
+      copy.append(element);
+    }
+    return copy;
+  }
+
+  /**
+   * {@inheritDoc}
+   * <p> Time complexity: O(1)
+   */
+  @Override
+  public Comparator<T> comparator() {
+    return this.comparator;
+  }
+
+  /**
+   * {@inheritDoc}
+   * <p> Time complexity: O(1)
+   */
+  @Override
+  public boolean isEmpty() { throw new UnsupportedOperationException("Not implemented yet"); }
+
+  /**
+   * {@inheritDoc}
+   * <p> Time complexity: O(1)
+   */
+  @Override
+  public int size() { throw new UnsupportedOperationException("Not implemented yet"); }
+
+  /**
+   * {@inheritDoc}
+   * <p> Time complexity: O(1)
+   */
+  @Override
+  public void clear() { throw new UnsupportedOperationException("Not implemented yet"); }
+
+  /**
+   * A helper class that encapsulates the logic for finding an element (or its
+   * insertion point) within the sorted linked list in a single traversal.
+   * <p>
+   * Upon instantiation with an element, it traverses the list and sets its public
+   * fields (`found`, `previous`, `current`) to reflect the result of the search.
+   * This avoids redundant list traversals in methods like {@code insert}, {@code delete},
+   * and {@code occurrences}.
+   * <p>
+   * The state of the Finder's fields after a search for {@code element} is as follows:
+   * <ul>
+   *     <li><b>If the element is found:</b>
+   *         <ul>
+   *             <li>{@code found} is {@code true}.</li>
+   *             <li>{@code current} points to the node containing the element.</li>
+   *             <li>{@code previous} points to the node immediately before {@code current},
+   *                 or is {@code null} if {@code current} is the first node in the list.</li>
+   *         </ul>
+   *     </li>
+   *     <li><b>If the element is not found:</b>
+   *         <ul>
+   *             <li>{@code found} is {@code false}.</li>
+   *             <li>{@code current} points to the node that would immediately follow the
+   *                 new element's position if it were to be inserted. This will be the
+   *                 first node in the list with an element greater than the one searched for.
+   *                 It can be {@code null} if the insertion point is at the end of the list.</li>
+   *             <li>{@code previous} points to the node that would precede the new element's
+   *                 position. It can be {@code null} if the insertion point is at the
+   *                 beginning of the list.</li>
+   *         </ul>
+   *     </li>
+   * </ul>
+   */
+  private final class Finder {
+    boolean found;
+    Node<T> previous, current;
+
+    Finder(T element) {
+      previous = null;
+      current = first;
+
+      int cmp = 0;
+      while (current != null && (cmp = comparator.compare(element, current.element)) > 0) {
+        previous = current;
+        current = current.next;
+      }
+      found = (current != null && cmp == 0);
+    }
+  }
+
+  /**
+   * {@inheritDoc}
+   * <p> Time complexity: O(n)
+   */
+  @Override
+  public void insert(T element) { throw new UnsupportedOperationException("Not implemented yet"); }
+
+  /**
+   * {@inheritDoc}
+   * <p> Time complexity: O(n)
+   */
+  @Override
+  public void delete(T element) { throw new UnsupportedOperationException("Not implemented yet"); }
+
+  /**
+   * {@inheritDoc}
+   * <p> Time complexity: O(n)
+   */
+  @Override
+  public int occurrences(T element) { throw new UnsupportedOperationException("Not implemented yet"); }
+
+  /**
+   * {@inheritDoc}
+   * <p> Time complexity: O(1)
+   */
+  @Override
+  public T minimum() { throw new UnsupportedOperationException("Not implemented yet"); }
+
+  /**
+   * {@inheritDoc}
+   * <p> Time complexity: O(1)
+   */
+  @Override
+  public T maximum() { throw new UnsupportedOperationException("Not implemented yet"); }
+
+  @Override
+  public Iterator<T> iterator() {
+    return new BagIterator();
+  }
+
+  /**
+   * An iterator for this bag that yields each element as many times as its occurrence count.
+   */
+  private final class BagIterator implements Iterator<T> {
+    private Node<T> currentNode;
+    private int occurrencesLeft;
+
+    BagIterator() {
+      this.currentNode = first;
+      if (this.currentNode != null) {
+        this.occurrencesLeft = this.currentNode.occurrences;
+      }
+    }
+
+    @Override
+    public boolean hasNext() {
+      return currentNode != null;
+    }
+
+    @Override
+    public T next() { throw new UnsupportedOperationException("Not implemented yet"); }
+  }
+
+  /**
+   * Appends an element to the end of the bag.
+   * PRECONDITION: The element must be >= the last element in the bag.
+   */
+  private void append(T element) {
+    assert first == null || comparator.compare(element, last.element) >= 0;
+
+    if (isEmpty()) {
+      first = new Node<>(element, 1, null);
+      last = first;
+    } else if (comparator.compare(element, last.element) == 0) {
+      last.occurrences++;
+    } else { // element > last.element
+      Node<T> newNode = new Node<>(element, 1, null);
+      last.next = newNode;
+      last = newNode;
+    }
+    size++;
+  }
+
+  // --- Set-like Operations ---
+
+  /**
+   * Modifies this bag to be the union with the given bag. Inefficient for general bags.
+   */
+  public void union(Bag<T> bag) {
+    for (T x : bag) {
+      this.insert(x);
+    }
+  }
+
+  /**
+   * Efficiently modifies this bag to be the union with another {@code SortedLinkedBag}.
+   */
+  public void union(SortedLinkedBag<T> that) { throw new UnsupportedOperationException("Not implemented yet"); }
+
+  /**
+   * Modifies this bag to be the intersection with the given bag. Inefficient.
+   */
+  public void intersection(Bag<T> bag) { throw new UnsupportedOperationException("Not implemented yet"); }
+
+  /**
+   * Efficiently modifies this bag to be the intersection with another {@code SortedLinkedBag}.
+   */
+  public void intersection(SortedLinkedBag<T> that) { throw new UnsupportedOperationException("Not implemented yet"); }
+
+  /**
+   * Modifies this bag to be the difference with the given bag. Inefficient.
+   */
+  public void difference(Bag<T> bag) { throw new UnsupportedOperationException("Not implemented yet"); }
+
+  /**
+   * Efficiently modifies this bag to be the difference with another {@code SortedLinkedBag}.
+   */
+  public void difference(SortedLinkedBag<T> that) { throw new UnsupportedOperationException("Not implemented yet"); }
+}
