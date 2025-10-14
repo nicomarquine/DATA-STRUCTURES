@@ -1,5 +1,7 @@
 package org.uma.ed.datastructures.queue;
 
+import jdk.jshell.spi.ExecutionControl;
+
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
@@ -144,7 +146,18 @@ public class ArrayQueue<T> extends AbstractQueue<T> implements Queue<T> {
    * @param that the {@code ArrayQueue} to be copied.
    * @return a new {@code ArrayQueue} with the same elements and order.
    */
-  public static <T> ArrayQueue<T> copyOf(ArrayQueue<T> that) { throw new UnsupportedOperationException("Not implemented yet"); }
+  public static <T> ArrayQueue<T> copyOf(ArrayQueue<T> that) {
+    ArrayQueue<T> copy = ArrayQueue.withCapacity(that.elements.length);
+    int current = that.first;
+    for(int i = 0; i < that.size;i++){
+      copy.elements[current] = that.elements[current];
+      current = that.advance(current);
+    }
+    copy.first = that.first;
+    copy.last = that.last;
+    copy.size = that.size;
+    return copy;
+  }
 
   /**
    * Creates a new {@code ArrayQueue} containing the same elements as the given queue.
@@ -159,7 +172,24 @@ public class ArrayQueue<T> extends AbstractQueue<T> implements Queue<T> {
    * @param that the generic {@code Queue} to be copied.
    * @return a new {@code ArrayQueue} with the same elements and order.
    */
-  public static <T> ArrayQueue<T> copyOf(Queue<T> that) { throw new UnsupportedOperationException("Not implemented yet"); }
+  public static <T> ArrayQueue<T> copyOf(Queue<T> that) {
+    ArrayQueue<T> copy = ArrayQueue.withCapacity(that.isEmpty() ? DEFAULT_INITIAL_CAPACITY : that.size());
+    int current = 0;
+    int initialSize = that.size();
+    while(!that.isEmpty()) {
+      copy.elements[current] = that.first();
+      that.dequeue();
+      current++;
+    }
+    copy.first = 0;
+    copy.last = initialSize -1;
+    copy.size = initialSize;
+    //restore that
+    for(int i = 0; i < initialSize;i++){
+      that.enqueue(copy.elements[i]);
+    }
+    return copy;
+  }
 
   /**
    * {@inheritDoc}
