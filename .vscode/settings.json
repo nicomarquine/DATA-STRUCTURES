@@ -1,3 +1,6 @@
 {
-    "cmake.options.statusBarVisibility": "visible"
+    "cmake.options.statusBarVisibility": "visible",
+    "files.associations": {
+        "unittest.h": "c"
+    }
 }
