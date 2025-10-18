@@ -13,7 +13,7 @@
 struct Task *Task_new(unsigned int id, const char name[], unsigned int quantum)
 {
   assert(name != NULL && "Task_new : name is null");
-  assert((strlen(name)) <= "Task_new; name is too long");
+  assert((strlen(name)) <= 20 && "Task_new; name is too long");
   assert(quantum > 0 && "Task_new: quantum is not greater than 0");
 
   struct Task* p_task = malloc(sizeof(struct Task));
