@@ -76,7 +76,6 @@ void PlayList_insertAtEnd(struct PlayList* p_playList, const char* songName) {
         struct Node* p_node = Node_new(songName, p_current, NULL);
         p_current -> p_next = p_node;
     }
-   
 }
 
 // private function to find node with a gigen song name in the playList.
@@ -100,7 +99,6 @@ bool PlayList_insertAfter(struct PlayList* p_playList, const char* targetSong, c
         if(p_node -> p_next != NULL){
             p_node -> p_next -> p_previous = p_node;
         }
-       
         return true;
     }
 }

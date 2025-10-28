@@ -35,9 +35,9 @@ public class ArrayList<T> extends AbstractList<T> implements List<T> {
 
   /*
    * INVARIANT:
-   *  - `size` holds the number of elements in the list.
-   *  - The elements of the list are stored in `elements[0...size-1]`.
-   *  - `elements.length` is the capacity of the array, which is always >= `size`.
+   *  - size holds the number of elements in the list.
+   *  - The elements of the list are stored in elements[0...size-1].
+   *  - elements.length is the capacity of the array, which is always >= size.
    */
 
   /**
@@ -147,21 +147,26 @@ public class ArrayList<T> extends AbstractList<T> implements List<T> {
    * <p> Time complexity: O(n)
    */
   @Override
-  public void clear() { throw new UnsupportedOperationException("Not implemented yet"); }
+  public void clear() {
+    for(int i = 0; i<size;i++){
+      elements[i] = null;
+    }
+    size = 0;
+  }
 
   /**
    * {@inheritDoc}
    * <p> Time complexity: O(1)
    */
   @Override
-  public boolean isEmpty() { throw new UnsupportedOperationException("Not implemented yet"); }
+  public boolean isEmpty() { return size == 0; }
 
   /**
    * {@inheritDoc}
    * <p> Time complexity: O(1)
    */
   @Override
-  public int size() { throw new UnsupportedOperationException("Not implemented yet"); }
+  public int size() { return size; }
 
   /**
    * Ensures that the capacity is sufficient to add one more element.
@@ -189,42 +194,79 @@ public class ArrayList<T> extends AbstractList<T> implements List<T> {
    * <p> Time complexity: O(n)
    */
   @Override
-  public void insert(int index, T element) { throw new UnsupportedOperationException("Not implemented yet"); }
+  public void insert(int index, T element) {
+    if(index == 0){
+      prepend(element);
+    } else if(index == size){
+      append(element);
+    }
+    else{
+      ensureCapacity();
+      validateIndex(index);
+      for(int i = size; i > index;i--){
+        elements[i] = elements[i-1];
+      }
+      elements[index] = element;
+      size++;
+    }
+  }
 
   /**
    * {@inheritDoc}
    * <p> Time complexity: O(n)
    */
   @Override
-  public void delete(int index) { throw new UnsupportedOperationException("Not implemented yet"); }
+  public void delete(int index) {
+    validateIndex(index);
+    for(int i = index; i < size-1;i++){
+      elements[i] = elements[i+1];
+    }
+    size--;
+    elements[size] = null; // Let GC (garbage collector) reclaim memory
+  }
 
   /**
    * {@inheritDoc}
    * <p> Time complexity: O(1)
    */
   @Override
-  public T get(int index) { throw new UnsupportedOperationException("Not implemented yet"); }
+  public T get(int index) {
+    validateIndex(index);
+    return elements[index];
+  }
 
   /**
    * {@inheritDoc}
    * <p> Time complexity: O(1)
    */
   @Override
-  public void set(int index, T element) { throw new UnsupportedOperationException("Not implemented yet"); }
-
-  /**
+  public void set(int index, T element) {
+    validateIndex(index);
+    elements[index] = element;
+  }  /**
    * {@inheritDoc}
    * <p> Time complexity: Amortized O(1).
    */
   @Override
-  public void append(T element) { throw new UnsupportedOperationException("Not implemented yet"); }
+  public void append(T element) {
+    ensureCapacity();
+    elements[size] = element;
+    size++;
+  }
 
   /**
    * {@inheritDoc}
    * <p> Time complexity: O(n)
    */
   @Override
-  public void prepend(T element) { throw new UnsupportedOperationException("Not implemented yet"); }
+  public void prepend(T element) {
+    ensureCapacity();
+    for(int i = size; i>0;i--){
+      elements[i] = elements[i-1];
+    }
+    elements[0] = element;
+    size++;
+  }
 
   /**
    * {@inheritDoc}
