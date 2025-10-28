@@ -41,10 +41,10 @@ public class SortedArrayPriorityQueue<T> extends AbstractPriorityQueue<T> implem
 
   /*
    * INVARIANT:
-   *  - The elements are stored in `elements[0...size-1]`.
+   *  - The elements are stored in elements[0...size-1].
    *  - The array is sorted in NON-ASCENDING (descending) order of priority.
    *    (i.e., from lowest priority to highest priority).
-   *  - The element with the highest priority (minimum value) is at `elements[size - 1]`.
+   *  - The element with the highest priority (minimum value) is at elements[size - 1].
    */
 
   /**
@@ -155,12 +155,16 @@ public class SortedArrayPriorityQueue<T> extends AbstractPriorityQueue<T> implem
 
   @Override
   public boolean isEmpty() {
-    throw new UnsupportedOperationException("Not implemented yet");
+    return size == 0;
   }
 
   @Override
   public void clear() {
-    throw new UnsupportedOperationException("Not implemented yet");
+
+    for(int i = 0; i<size;i++){
+      elements[i] = null;
+    }
+    size = 0;
   }
 
   @Override
@@ -182,7 +186,25 @@ public class SortedArrayPriorityQueue<T> extends AbstractPriorityQueue<T> implem
    */
   @Override
   public void enqueue(T element) {
-    throw new UnsupportedOperationException("Not implemented yet");
+    int left = 0, right = size-1;
+    while(left <=right){
+      // int mid = (left + right) / 2;
+      int mid = left + (right-left) / 2; // To prevent overflow
+      int cmp = comparator.compare(element, elements[mid]);
+      if(cmp == 0){
+        right = mid -1;
+      } else{
+        left = mid + 1;
+      }
+    }
+    // left is the insertion point for new element
+    ensureCapacity();
+    //move elements to right
+    for(int i = size; i> left ; i--){
+      elements[i] = elements[i-1];
+    }
+    elements[left] = element;
+    size++;
   }
 
   /**
@@ -192,7 +214,11 @@ public class SortedArrayPriorityQueue<T> extends AbstractPriorityQueue<T> implem
    */
   @Override
   public T first() {
-    throw new UnsupportedOperationException("Not implemented yet");
+    if(isEmpty()){
+      throw new EmptyPriorityQueueException("First on empty queue" );
+
+    }
+    return elements[size-1];
   }
 
   /**
@@ -202,7 +228,12 @@ public class SortedArrayPriorityQueue<T> extends AbstractPriorityQueue<T> implem
    */
   @Override
   public void dequeue() {
-    throw new UnsupportedOperationException("Not implemented yet");
+    if(isEmpty()){
+      throw new EmptyPriorityQueueException("Dequeue on empty queue" );
+
+    }
+    elements[size-1] = null; // let garbage collector reclaim memory
+    size--;
   }
 
   /**
