@@ -36,11 +36,11 @@ public class LinkedList<T> extends AbstractList<T> implements List<T> {
 
   /*
    * INVARIANT:
-   *  - The `size` field holds the number of elements in the list.
-   *  - If the list is empty (`size == 0`), both `first` and `last` are null.
+   *  - The size field holds the number of elements in the list.
+   *  - If the list is empty (size == 0), both first and last are null.
    *  - If the list is not empty:
-   *      - `first` references the first node in the sequence.
-   *      - `last` references the last node in the sequence.
+   *      - first references the first node in the sequence.
+   *      - last references the last node in the sequence.
    *      - Each node contains a reference to the next node or null if it is the last node.
    */
 
@@ -138,21 +138,25 @@ public class LinkedList<T> extends AbstractList<T> implements List<T> {
    * <p> Time complexity: O(1)
    */
   @Override
-  public void clear() { throw new UnsupportedOperationException("Not implemented yet"); }
+  public void clear() {
+    first = null;
+    last = null;
+    size = 0;
+  }
 
   /**
    * {@inheritDoc}
    * <p> Time complexity: O(1)
    */
   @Override
-  public boolean isEmpty() { throw new UnsupportedOperationException("Not implemented yet"); }
+  public boolean isEmpty() { return size == 0; }
 
   /**
    * {@inheritDoc}
    * <p> Time complexity: O(1)
    */
   @Override
-  public int size() { throw new UnsupportedOperationException("Not implemented yet"); }
+  public int size() { return size; }
 
   /**
    * Checks if the given index is valid for an access, modification, or deletion operation.
@@ -190,42 +194,92 @@ public class LinkedList<T> extends AbstractList<T> implements List<T> {
    * <p> Time complexity: O(n)
    */
   @Override
-  public void insert(int index, T element) { throw new UnsupportedOperationException("Not implemented yet"); }
+  public void insert(int index, T element) {
+    if(index == 0){
+      prepend(element);
+    } else if(index == size){
+      append(element);
+    } else{
+      checkIndex(index);
+      Node<T> prev = nodeAtIndex(index-1);
+      Node<T> node = new Node<>(element,prev.next);
+      prev.next = node;
+      size++;
+    }
+  }
 
   /**
    * {@inheritDoc}
    * <p> Time complexity: O(n)
    */
   @Override
-  public void delete(int index) { throw new UnsupportedOperationException("Not implemented yet"); }
+  public void delete(int index) {
+    checkIndex(index);
+    if(index == 0){
+      first = first.next;
+      if(first == null){
+        last = null;
+      }
+    } else if (index == size-1){
+      Node<T> prev = nodeAtIndex(index-1);
+      prev.next = null;
+      last = prev;
+    } else{
+      Node<T> prev = nodeAtIndex(index-1);
+      prev.next = prev.next.next;
+    }
+    size--;
+  }
 
   /**
    * {@inheritDoc}
    * <p> Time complexity: O(n)
    */
   @Override
-  public T get(int index) { throw new UnsupportedOperationException("Not implemented yet"); }
+  public T get(int index) {
+    checkIndex(index);
+    return nodeAtIndex(index).element;
+  }
 
   /**
    * {@inheritDoc}
    * <p> Time complexity: O(n)
    */
   @Override
-  public void set(int index, T element) { throw new UnsupportedOperationException("Not implemented yet"); }
+  public void set(int index, T element) {
+    checkIndex(index);
+    nodeAtIndex(index).element = element;
+  }
 
   /**
    * {@inheritDoc}
    * <p> Time complexity: O(1)
    */
   @Override
-  public void append(T element) { throw new UnsupportedOperationException("Not implemented yet"); }
+  public void append(T element) {
+    Node<T> node = new Node<>(element,null);
+    if(isEmpty()){
+      first = node;
+    } else {
+      last.next = node;
+    }
+    last = node;
+    size++;
+  }
 
   /**
    * {@inheritDoc}
    * <p> Time complexity: O(1)
    */
   @Override
-  public void prepend(T element) { throw new UnsupportedOperationException("Not implemented yet"); }
+  public void prepend(T element) {
+    Node<T> node = new Node<>(element,first);
+    first = node;
+    if(size == 0){
+      last = node;
+    }
+    size++;
+  }
 
   /**
    * {@inheritDoc}
