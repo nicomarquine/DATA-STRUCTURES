@@ -94,7 +94,11 @@ public final class BinaryTree {
    * @return the total number of nodes in the tree.
    */
   public static <T> int size(Node<T> root) {
-    throw new UnsupportedOperationException("Not implemented yet");
+    if(root == null){
+      return 0;
+    } else {
+      return 1 + size(root.left) + size(root.right);
+    }
   }
 
   /**
@@ -107,7 +111,13 @@ public final class BinaryTree {
    * @param root the root node of the tree.
    * @return the height of the tree.
    */
-  public static <T> int height(Node<T> root) {throw new UnsupportedOperationException("Not implemented yet"); }
+  public static <T> int height(Node<T> root) {
+    if(root == null){
+      return 0;
+    } else{
+      return 1 + Math.max(height(root.left),height(root.right));
+    }
+  }
 
   /**
    * Computes the sum of all elements in a binary tree of integers.
@@ -172,7 +182,13 @@ public final class BinaryTree {
     return traversal;
   }
 
-  private static <T> void buildPreorder(Node<T> node, List<T> traversal) {throw new UnsupportedOperationException("Not implemented yet"); }
+  private static <T> void buildPreorder(Node<T> node, List<T> traversal) {
+    if(node != null){
+      traversal.append(node.element);
+      buildPreorder(node.left,traversal);
+      buildPreorder(node.right,traversal);
+    }
+  }
 
   /**
    * Performs a postorder traversal of a binary tree.

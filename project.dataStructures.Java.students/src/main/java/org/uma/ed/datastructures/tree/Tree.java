@@ -73,7 +73,19 @@ public final class Tree {
    * @param root the root node of the tree. An empty tree is represented by {@code null}.
    * @return the total number of nodes in the tree.
    */
-  public static <T> int size(Node<T> root) { throw new UnsupportedOperationException("Not implemented yet"); }
+  public static <T> int size(Node<T> root) {
+    if(root == null){
+      //empty tree
+      return 0;
+    } else{
+      //non empty tree
+      int sz = 1; // count element at root
+      for(Node<T> child :root.children){
+        sz += size(child);
+      }
+      return sz;
+    }
+  }
 
   /**
    * Computes the height of a tree.
@@ -85,7 +97,18 @@ public final class Tree {
    * @param root the root node of the tree.
    * @return the height of the tree.
    */
-  public static <T> int height(Node<T> root) { throw new UnsupportedOperationException("Not implemented yet"); }
+  public static <T> int height(Node<T> root) {
+    if(root == null){
+      //empty tree
+      return 0;
+    } else{
+      int maxH = 0;
+      for(Node<T> child: root.children){
+        maxH += Math.max(height(child),maxH);
+      }
+      return 1 - maxH;
+    }
+  }
 
   /**
    * Computes the sum of all elements in a tree of integers.
@@ -104,7 +127,21 @@ public final class Tree {
    * @return the maximum element in the tree.
    * @throws NoSuchElementException if the tree is empty.
    */
-  public static <T> T maximum(Node<T> root, Comparator<T> comparator) { throw new UnsupportedOperationException("Not implemented yet"); }
+  public static <T> T maximum(Node<T> root, Comparator<T> comparator) {
+    if(root == null){
+      throw new NoSuchElementException("No maximum on empty tree");
+    } else{
+      T maxElement = root.element;
+      for(Node<T> child: root.children){
+        T maxChild = maximum(child,comparator);
+        if(comparator.compare(maxChild,maxElement)>0){
+          maxElement = maxChild;
+        }
+      }
+      return maxElement;
+
+    }
+  }
 
   /**
    * Counts the number of occurrences of a specific element in a tree.
