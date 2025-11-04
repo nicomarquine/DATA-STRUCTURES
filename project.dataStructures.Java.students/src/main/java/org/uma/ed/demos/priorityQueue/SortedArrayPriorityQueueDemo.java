@@ -8,7 +8,7 @@ import java.util.Comparator;
 class Person{
     public int ID;
     private String name;
-    private int age;
+    public int age;
 
     public Person(int ID, String name, int age) {
         this.ID = ID;
@@ -26,8 +26,8 @@ public class SortedArrayPriorityQueueDemo {
 
 
     public static void main(String[] args) {
-        Comparator<Person> comparator1 = Comparator.comparingInt(Person person -> person.ID);
-        Comparator<Person> comparator2 = Comparator.comparingInt(Person person -> person.age);
+        Comparator<Person> comparator1 = Comparator.comparingInt(person -> person.ID);
+        Comparator<Person> comparator2 = Comparator.comparingInt(person -> person.age);
 
         PriorityQueue<Person> pq1 = new SortedArrayPriorityQueue<Person>(comparator1, 32);
 

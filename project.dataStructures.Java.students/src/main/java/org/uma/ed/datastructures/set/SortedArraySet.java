@@ -41,11 +41,11 @@ public class SortedArraySet<T> extends AbstractSortedSet<T> implements SortedSet
 
   /*
    * INVARIANT:
-   *  - The `size` field holds the number of elements currently in the set.
-   *  - The elements are stored in `elements[0...size-1]` and are always sorted
-   *    according to the `comparator`.
-   *  - The array contains no duplicate elements as per the `comparator`.
-   *  - `elements.length` is the capacity of the array, which is always >= `size`.
+   *  - The size field holds the number of elements currently in the set.
+   *  - The elements are stored in elements[0...size-1] and are always sorted
+   *    according to the comparator.
+   *  - The array contains no duplicate elements as per the comparator.
+   *  - elements.length is the capacity of the array, which is always >= size.
    */
 
   /**
@@ -193,14 +193,26 @@ public class SortedArraySet<T> extends AbstractSortedSet<T> implements SortedSet
    * @param that the sorted set to be copied.
    * @return a new {@code SortedArraySet} with the same elements.
    */
-  public static <T> SortedArraySet<T> copyOf(SortedSet<T> that) { throw new UnsupportedOperationException("Not implemented yet"); }
+  public static <T> SortedArraySet<T> copyOf(SortedSet<T> that) {
+    SortedArraySet<T> copy = new SortedArraySet<>(that.comparator(),that.size() == 0?DEFAULT_INITIAL_CAPACITY:that.size());
+    for(T element : that){
+      copy.append(element);
+    }
+    return copy;
+
+  }
 
   /**
    * {@inheritDoc}
    * <p> Time complexity: O(n)
    */
   @Override
-  public void clear() { throw new UnsupportedOperationException("Not implemented yet"); }
+  public void clear() {
+    for(int i = 0 ; i<size;i++){
+      elements[i] = null;
+    }
+    size = 0;
+  }
 
   /**
    * {@inheritDoc}
@@ -216,14 +228,14 @@ public class SortedArraySet<T> extends AbstractSortedSet<T> implements SortedSet
    * <p> Time complexity: O(1)
    */
   @Override
-  public boolean isEmpty() { throw new UnsupportedOperationException("Not implemented yet"); }
+  public boolean isEmpty() { return size == 0; }
 
   /**
    * {@inheritDoc}
    * <p> Time complexity: O(1)
    */
   @Override
-  public int size() { throw new UnsupportedOperationException("Not implemented yet"); }
+  public int size() { return size; }
 
   /**
    * Ensures the array has enough capacity for at least one more element.
@@ -274,14 +286,33 @@ public class SortedArraySet<T> extends AbstractSortedSet<T> implements SortedSet
    * The search itself is O(log n).
    */
   @Override
-  public void insert(T element) { throw new UnsupportedOperationException("Not implemented yet"); }
+  public void insert(T element) {
+    Finder find = new Finder(element);
+    if(find.found){
+      // element found at finder.index;overwrite
+      elements[find.index] = element;
+
+    } else{
+      // element not found; insert at finder.index to keep order
+      ensureCapacity();
+      //shift right
+      for(int i = size; i > find.index;i--){
+        elements[i] = elements[i-1];
+      }
+      elements[find.index] = element;
+      size++;
+    }
+  }
 
   /**
    * {@inheritDoc}
    * <p> Time complexity: O(log n)
    */
   @Override
-  public boolean contains(T element) { throw new UnsupportedOperationException("Not implemented yet"); }
+  public boolean contains(T element) {
+    Finder find = new Finder(element);
+    return find.found;
+  }
 
   /**
    * {@inheritDoc}
@@ -289,21 +320,40 @@ public class SortedArraySet<T> extends AbstractSortedSet<T> implements SortedSet
    * The search itself is O(log n).
    */
   @Override
-  public void delete(T element) { throw new UnsupportedOperationException("Not implemented yet"); }
+  public void delete(T element) {
+    Finder finder = new Finder(element);
+    if(finder.found){
+      for(int i = finder.index ; i < size-1;i++){
+        elements[i] = elements[i + 1];
+      }
+      elements[size-1] = null;
+      size--;
+    }
+  }
 
   /**
    * {@inheritDoc}
    * <p> Time complexity: O(1)
    */
   @Override
-  public T minimum() { throw new UnsupportedOperationException("Not implemented yet"); }
+  public T minimum() {
+    if(isEmpty()){
+      throw new NoSuchElementException("No elements found");
+    }
+    return elements[0];
+  }
 
   /**
    * {@inheritDoc}
    * <p> Time complexity: O(1)
    */
   @Override
-  public T maximum() { throw new UnsupportedOperationException("Not implemented yet"); }
+  public T maximum() {
+    if(isEmpty()){
+      throw new NoSuchElementException("No elements found");
+    }
+    return elements[size-1];
+  }
 
   /**
    * {@inheritDoc}
@@ -320,10 +370,16 @@ public class SortedArraySet<T> extends AbstractSortedSet<T> implements SortedSet
     private int currentIndex = 0;
 
     @Override
-    public boolean hasNext() { throw new UnsupportedOperationException("Not implemented yet"); }
+    public boolean hasNext() { return currentIndex<size; }
 
     @Override
-    public T next() { throw new UnsupportedOperationException("Not implemented yet"); }
+    public T next() {
+      if(!hasNext()){
+        throw new NoSuchElementException("No more elements");
+      }
+      T element = elements[currentIndex];
+      currentIndex++;
+      return element;}
   }
 
   /**
@@ -373,7 +429,33 @@ public class SortedArraySet<T> extends AbstractSortedSet<T> implements SortedSet
    */
   public static <T> SortedArraySet<T> intersection(SortedSet<T> set1, SortedSet<T> set2) {
     checkSameComparator(set1, set2, "intersection");
-    throw new UnsupportedOperationException("Not implemented yet");
+    Iterator<T> it1 = set1.iterator();
+    Iterator<T> it2 = set2.iterator();
+
+    T element1 = nextOrNull(it1);
+    T element2 = nextOrNull(it2);
+
+    int capacity = Math.min(set1.size(),set2.size());
+    if(capacity == 0){
+      capacity = DEFAULT_INITIAL_CAPACITY;
+    }
+    SortedArraySet<T> i= new SortedArraySet<>(set1.comparator(),capacity);
+
+    while(element1 != null || element2 != null){ // while we have at least one element to add
+      int cmp = i.comparator.compare(element1,element2);
+      if(cmp<0){
+        element1 = nextOrNull(it1);
+      } else if(cmp > 0){
+        element2 = nextOrNull(it2);
+      } else{
+        i.append(element1);
+        element1 = nextOrNull(it1);
+        element2 = nextOrNull(it2);
+
+      }
+    }
+
+    return i;
   }
 
   /**
@@ -382,6 +464,48 @@ public class SortedArraySet<T> extends AbstractSortedSet<T> implements SortedSet
    */
   public static <T> SortedArraySet<T> union(SortedSet<T> set1, SortedSet<T> set2) {
     checkSameComparator(set1, set2, "union");
-    throw new UnsupportedOperationException("Not implemented yet");
+    Iterator<T> it1 = set1.iterator();
+    Iterator<T> it2 = set2.iterator();
+
+    T element1 = nextOrNull(it1);
+    T element2 = nextOrNull(it2);
+    int capacity = set1.size() + set2.size();
+    if(capacity == 0){
+      capacity = DEFAULT_INITIAL_CAPACITY;
+    }
+
+    SortedArraySet<T> u = new SortedArraySet<>(set1.comparator(),capacity);
+
+    while(element1 != null || element2 != null){ // while we have at least one element to add
+      if(element1 == null){
+        // No more elements from first set
+        u.append(element2);
+        element2 = nextOrNull(it2);
+      } else if(element2 == null){
+        // No more elements from second set
+        u.append(element1);
+        element1 = nextOrNull(it1);
+
+      } else{
+        // at least one element from eac set, compare them
+
+        int cmp = u.comparator.compare(element1,element2);
+        if(cmp == 0){
+          // repeated elements
+          u.append(element1);
+          element1 = nextOrNull(it1);
+          element2 = nextOrNull(it2);
+        } else if( cmp < 0){
+          // element1 comes before element2
+          u.append(element1);
+          element1 = nextOrNull(it1);
+        } else{
+          // element2 comes before element1
+          u.append(element2);
+          element2 = nextOrNull(it2);
+        }
+      }
+    }
+    return u;
   }
 }
