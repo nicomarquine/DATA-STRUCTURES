@@ -236,10 +236,10 @@ public class BinaryHeap<T> implements Heap<T> {
   @SuppressWarnings("unchecked")
   public static <T> BinaryHeap<T> copyOf(BinaryHeap<T> that) {
     BinaryHeap<T> copy = new BinaryHeap<T>(that.comparator, that.size == 0 ? DEFAULT_INITIAL_CAPACITY : that.size);
+    copy.size = that.size;
     for(int i = 0; i < copy.size; i++) {
       copy.elements[i] = that.elements[i];
     }
-    copy.size = that.size;
     return copy;
   }
 
@@ -396,7 +396,7 @@ public class BinaryHeap<T> implements Heap<T> {
 
       //does it also have a right child?
       int indexRightChild = rightChild(index);
-      if (isNode(indexRightChild) && lessThan(indexRightChild, indexMinElem)) {
+      if (isNode(indexRightChild) && lessThan(indexRightChild, indexLeftChild)) {
         indexMinElem = indexRightChild;
       }
 
@@ -415,6 +415,9 @@ public class BinaryHeap<T> implements Heap<T> {
    */
   @Override
   public void deleteMinimum() {
+    if (isEmpty()) {
+      throw new EmptyHeapException("deleteMinimum on empty heap");
+    }
     //move rightmost element at last level to root
     elements[ROOT_INDEX] = elements[size - 1];
     elements[size - 1] = null;
