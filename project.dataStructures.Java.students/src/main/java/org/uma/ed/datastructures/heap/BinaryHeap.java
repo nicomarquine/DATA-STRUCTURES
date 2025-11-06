@@ -234,35 +234,53 @@ public class BinaryHeap<T> implements Heap<T> {
    * @return a new binary heap that is a copy of the given heap.
    */
   @SuppressWarnings("unchecked")
-  public static <T> BinaryHeap<T> copyOf(BinaryHeap<T> that) { throw new UnsupportedOperationException("Not implemented yet"); }
+  public static <T> BinaryHeap<T> copyOf(BinaryHeap<T> that) {
+    BinaryHeap<T> copy = new BinaryHeap<T>(that.comparator, that.size == 0 ? DEFAULT_INITIAL_CAPACITY : that.size);
+    for(int i = 0; i < copy.size; i++) {
+      copy.elements[i] = that.elements[i];
+    }
+    copy.size = that.size;
+    return copy;
+  }
 
   /**
    * {@inheritDoc}
    * <p> Time complexity: O(1)
    */
   @Override
-  public Comparator<T> comparator() { throw new UnsupportedOperationException("Not implemented yet"); }
+  public Comparator<T> comparator() {
+    return comparator;
+  }
 
   /**
    * {@inheritDoc}
    * <p> Time complexity: O(1)
    */
   @Override
-  public boolean isEmpty() { throw new UnsupportedOperationException("Not implemented yet"); }
+  public boolean isEmpty() {
+    return size == 0;
+  }
 
   /**
    * {@inheritDoc}
    * <p> Time complexity: O(1)
    */
   @Override
-  public int size() { throw new UnsupportedOperationException("Not implemented yet"); }
+  public int size() {
+    return size;
+  }
 
   /**
    * {@inheritDoc}
    * <p> Time complexity: O(n)
    */
   @Override
-  public void clear() { throw new UnsupportedOperationException("Not implemented yet"); }
+  public void clear() {
+    for(int i = 0; i < size; i++) {
+      elements[i] = null;
+    }
+    size = 0;
+  }
 
   /**
    * Ensures the internal array has enough capacity for at least one more element.
@@ -279,35 +297,61 @@ public class BinaryHeap<T> implements Heap<T> {
    * <p> Time complexity: Amortized O(log n). A single insertion can be O(n) if resizing occurs.
    */
   @Override
-  public void insert(T element) { throw new UnsupportedOperationException("Not implemented yet"); }
+  public void insert(T element) {
+    ensureCapacity();
+    //place new element at right in las level
+    elements[size] = element;
+    heapifyUp(size);
+    size++;
+  }
 
   // Helper method: Checks if element at index1 has higher priority (is smaller) than element at index2.
-  private boolean lessThan(int index1, int index2) { throw new UnsupportedOperationException("Not implemented yet"); }
+  private boolean lessThan(int index1, int index2) {
+    return comparator.compare(elements[index1], elements[index2]) < 0;
+  }
 
   // Helper method: Swaps two elements in the internal array.
-  private void swap(int index1, int index2) { throw new UnsupportedOperationException("Not implemented yet"); }
+  private void swap(int index1, int index2) {
+    T temp = elements[index1];
+    elements[index1] = elements[index2];
+    elements[index2] = temp;
+  }
 
   // Helper method: Checks if the node at the given index is the root.
-  private static boolean isRoot(int index) { throw new UnsupportedOperationException("Not implemented yet"); }
+  private static boolean isRoot(int index) {
+    return index == ROOT_INDEX;
+  }
 
   // Helper method: Computes the index of the parent of the node at the given index.
-  private static int parent(int index) { throw new UnsupportedOperationException("Not implemented yet"); }
+  private static int parent(int index) {
+    return (index - 1) / 2;
+  }
 
   // Helper method: Computes the index of the left child of the node at the given index.
-  private static int leftChild(int index) { throw new UnsupportedOperationException("Not implemented yet"); }
+  private static int leftChild(int index) {
+    return 2 * index + 1;
+  }
 
   // Helper method: Computes the index of the right child of the node at the given index.
-  private static int rightChild(int index) { throw new UnsupportedOperationException("Not implemented yet"); }
+  private static int rightChild(int index) {
+    return 2 * index + 2;
+  }
 
   // Helper method: Checks if an index corresponds to a valid node within the heap.
-  private boolean isNode(int index) { throw new UnsupportedOperationException("Not implemented yet"); }
+  private boolean isNode(int index) {
+    return index < size;
+  }
 
   // Helper method: Checks if the node at the given index has a left child.
-  private boolean hasLeftChild(int index) { throw new UnsupportedOperationException("Not implemented yet"); }
+  private boolean hasLeftChild(int index) {
+    return leftChild(index) < size;
+  }
 
   // Helper method: Checks if the node at the given index is a leaf.
   // In a complete tree, if there's no left child, there's no right child either.
-  private boolean isLeaf(int index) { throw new UnsupportedOperationException("Not implemented yet"); }
+  private boolean isLeaf(int index) {
+    return !hasLeftChild(index);
+  }
 
   /**
    * Restores the heap property by moving an element upwards from a given index
@@ -315,14 +359,29 @@ public class BinaryHeap<T> implements Heap<T> {
    *
    * @param index The index of the element to move up.
    */
-  private void heapifyUp(int index) { throw new UnsupportedOperationException("Not implemented yet"); }
+  private void heapifyUp(int index) {
+    while (isRoot(index)) {
+      int indexParent = parent(index);
+      if(lessThan(index, indexParent)) {
+        swap(index, indexParent);
+        index = indexParent;
+      }else{
+        break;
+      }
+    }
+  }
 
   /**
    * {@inheritDoc}
    * <p> Time complexity: O(1)
    */
   @Override
-  public T minimum() { throw new UnsupportedOperationException("Not implemented yet"); }
+  public T minimum() {
+    if(isEmpty()){
+      throw new EmptyHeapException("minimum on empty heap");
+    }
+    return elements[ROOT_INDEX];
+  }
 
   /**
    * Restores the heap property by moving an element downwards from a given index
@@ -330,14 +389,38 @@ public class BinaryHeap<T> implements Heap<T> {
    *
    * @param index The index of the element to move down.
    */
-  private void heapifyDown(int index) { throw new UnsupportedOperationException("Not implemented yet"); }
+  private void heapifyDown(int index) {
+    while(!isLeaf(index)) {
+      int indexLeftChild = leftChild(index);
+      int indexMinElem = indexLeftChild;
+
+      //does it also have a right child?
+      int indexRightChild = rightChild(index);
+      if (isNode(indexRightChild) && lessThan(indexRightChild, indexMinElem)) {
+        indexMinElem = indexRightChild;
+      }
+
+      if(lessThan(indexMinElem, index)) {
+        swap(index, indexMinElem);
+        index = indexMinElem;
+      } else {
+        break;
+      }
+    }
+  }
 
   /**
    * {@inheritDoc}
    * <p> Time complexity: O(log n)
    */
   @Override
-  public void deleteMinimum() { throw new UnsupportedOperationException("Not implemented yet"); }
+  public void deleteMinimum() {
+    //move rightmost element at last level to root
+    elements[ROOT_INDEX] = elements[size - 1];
+    elements[size - 1] = null;
+    heapifyDown(ROOT_INDEX);
+    size--;
+  }
 
   /**
    * Returns a string representation of the heap, structured as a tree.
