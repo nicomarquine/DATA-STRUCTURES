@@ -170,7 +170,11 @@ public class SortedLinkedSet<T> extends AbstractSortedSet<T> implements SortedSe
    * @return a new {@code SortedLinkedSet} with the same elements.
    */
   public static <T> SortedLinkedSet<T> copyOf(SortedSet<T> that) {
-    throw new UnsupportedOperationException("Not implemented yet");
+    SortedLinkedSetBuilder<T> copy = new SortedLinkedSetBuilder<>(that.comparator());
+    for(T element : that){
+      copy.append(element);
+    }
+    return copy.toSortedLinkedSet();
   }
 
   /**
@@ -178,7 +182,10 @@ public class SortedLinkedSet<T> extends AbstractSortedSet<T> implements SortedSe
    * <p> Time complexity: O(1)
    */
   @Override
-  public void clear() { throw new UnsupportedOperationException("Not implemented yet"); }
+  public void clear() {
+    first = null;
+    size = 0;
+  }
 
   /**
    * {@inheritDoc}
@@ -194,14 +201,18 @@ public class SortedLinkedSet<T> extends AbstractSortedSet<T> implements SortedSe
    * <p> Time complexity: O(1)
    */
   @Override
-  public boolean isEmpty() { throw new UnsupportedOperationException("Not implemented yet"); }
+  public boolean isEmpty() {
+    return size == 0;
+  }
 
   /**
    * {@inheritDoc}
    * <p> Time complexity: O(1)
    */
   @Override
-  public int size() { throw new UnsupportedOperationException("Not implemented yet"); }
+  public int size() {
+    return size;
+  }
 
   /**
    * A helper class that traverses the list to find the correct position for an element.
@@ -231,35 +242,86 @@ public class SortedLinkedSet<T> extends AbstractSortedSet<T> implements SortedSe
    * <p> Time complexity: O(n)
    */
   @Override
-  public void insert(T element) { throw new UnsupportedOperationException("Not implemented yet"); }
+  public void insert(T element) {
+    Finder finder = new Finder(element);
+
+    if(finder.found) {
+      //element in the set, replace it
+      finder.current.element = element;
+    }else{
+      //element not in the set
+      Node<T> node = new Node<>(element, finder.current);
+
+      if(finder.previous == null) {
+        //insert at first position
+        first = node;
+      }else{
+        finder.previous.next = node;
+      }
+      size++;
+    }
+  }
 
   /**
    * {@inheritDoc}
    * <p> Time complexity: O(n)
    */
   @Override
-  public boolean contains(T element) { throw new UnsupportedOperationException("Not implemented yet"); }
+  public boolean contains(T element) {
+    Finder finder = new Finder(element);
+
+    return finder.found;
+  }
 
   /**
    * {@inheritDoc}
    * <p> Time complexity: O(n)
    */
   @Override
-  public void delete(T element) { throw new UnsupportedOperationException("Not implemented yet"); }
+  public void delete(T element) {
+    Finder finder = new Finder(element);
+
+    if (finder.found) {
+      //found. remove it
+      if(finder.previous == null) {
+        //elemnt to remove is the first one
+        first = finder.current.next;
+      }else{
+        //the element to remove is not the first one
+        finder.previous.next = finder.current.next;
+      }
+      size--;
+    }
+  }
 
   /**
    * {@inheritDoc}
    * <p> Time complexity: O(1)
    */
   @Override
-  public T minimum() { throw new UnsupportedOperationException("Not implemented yet"); }
+  public T minimum() {
+    if(isEmpty()){
+      throw new NoSuchElementException("minimum on empty set");
+    }
+    return first.element;
+  }
 
   /**
    * {@inheritDoc}
    * <p> Time complexity: O(n)
    */
   @Override
-  public T maximum() { throw new UnsupportedOperationException("Not implemented yet"); }
+  public T maximum() {
+    if(isEmpty()){
+      throw new NoSuchElementException("maximum on empty set");
+    }
+    Node<T> current = first;
+    while(current.next != null){
+      current = current.next;
+    }
+
+    return current.element;
+  }
 
   /**
    * {@inheritDoc}
@@ -276,10 +338,19 @@ public class SortedLinkedSet<T> extends AbstractSortedSet<T> implements SortedSe
     private Node<T> current = first;
 
     @Override
-    public boolean hasNext() { throw new UnsupportedOperationException("Not implemented yet"); }
+    public boolean hasNext() {
+      return current != null;
+    }
 
     @Override
-    public T next() { throw new UnsupportedOperationException("Not implemented yet"); }
+    public T next() {
+      if(!hasNext()){
+        throw new NoSuchElementException("no more elements");
+      }
+      T element = current.element;
+      current = current.next;
+      return element;
+    }
   }
 
   /**
