@@ -5,6 +5,7 @@ import org.uma.ed.datastructures.list.List;
 import org.uma.ed.datastructures.queue.JDKQueue;
 import org.uma.ed.datastructures.queue.Queue;
 
+import javax.xml.crypto.NodeSetData;
 import java.util.Comparator;
 import java.util.NoSuchElementException;
 
@@ -136,7 +137,26 @@ public final class BinaryTree {
    * @return the maximum element in the tree.
    * @throws NoSuchElementException if the tree is empty.
    */
-  public static <T> T maximum(Node<T> root, Comparator<T> comparator) { throw new UnsupportedOperationException("Not implemented yet"); }
+  public static <T> T maximum(Node<T> root, Comparator<T> comparator) {
+    if(root == null){
+      throw new NoSuchElementException("no max");
+    }
+    T max = root.element;
+
+    if(root.left != null) {
+      T maxL = maximum(root.left, comparator);
+      if(comparator.compare(maxL, max) > 0){
+        max = maxL;
+      }
+    }
+    if(root.right != null) {
+      T maxR = maximum(root.left, comparator);
+      if (comparator.compare(maxR, max) > 0) {
+        max = maxR;
+      }
+    }
+    return max;
+  }
 
   /**
    * Counts the number of occurrences of a specific element in a binary tree.
@@ -227,5 +247,24 @@ public final class BinaryTree {
    * @param root the root node of the tree.
    * @return a {@code List} containing the elements in breadth-first sequence.
    */
-  public static <T> List<T> breadthFirst(Node<T> root) { throw new UnsupportedOperationException("Not implemented yet"); }
+  public static <T> List<T> breadthFirst(Node<T> root) {
+    List<T> traversal = new JDKArrayList<>();
+    Queue<Node<T>> q = JDKQueue.of(root);
+
+    while(!q.isEmpty()){
+      Node<T> node = q.first();
+      q.dequeue();
+
+      traversal.append(node.element);
+
+      if(node.left != null){
+        q.enqueue(node.left);
+      }
+
+      if(node.right != null){
+        q.enqueue(node.right);
+      }
+    }
+    return traversal;
+  }
 }
