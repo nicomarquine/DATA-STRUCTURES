@@ -2,6 +2,10 @@ package org.uma.ed.datastructures.heap;
 
 import java.util.Comparator;
 import org.uma.ed.datastructures.list.JDKArrayList;
+import org.uma.ed.datastructures.queue.ArrayQueue;
+import org.uma.ed.datastructures.queue.Queue;
+
+import javax.xml.crypto.NodeSetData;
 
 /**
  * An implementation of the {@link Heap} interface using a weight-biased leftist heap.
@@ -138,7 +142,32 @@ public class WBLeftistHeap<T> implements Heap<T> {
   /**
    * Helper method to build a heap from a list of singleton nodes in O(n).
    */
-  private static <T> WBLeftistHeap<T> merge(Comparator<T> comparator, JDKArrayList<Node<T>> nodes) { throw new UnsupportedOperationException("Not implemented yet"); }
+  private static <T> WBLeftistHeap<T> merge(Comparator<T> comparator, JDKArrayList<Node<T>> nodes) {
+    WBLeftistHeap<T> heap = new WBLeftistHeap<>(comparator);
+    if(nodes.isEmpty()){
+      return heap;
+    }
+    //list is non-empty
+    Queue<Node<T>> q = new ArrayQueue<>();
+    for(Node<T> node : nodes){
+      q.enqueue(node);
+    }
+
+    while (q.size() > 1){
+      Node<T> node1 = q.first();
+      q.dequeue();
+
+      Node<T> node2 = q.first();
+      q.dequeue();
+
+      Node<T> node3 = heap.merge(node1,node2);
+      q.enqueue(node3);
+    }
+    heap.root = q.first();
+
+    return heap;
+  }
+
 
   /**
    * Creates a new {@code WBLeftistHeap} containing the same elements as the given heap.
@@ -148,28 +177,34 @@ public class WBLeftistHeap<T> implements Heap<T> {
     return new WBLeftistHeap<>(that.comparator, copyOf(that.root));
   }
 
-  private static <T> Node<T> copyOf(Node<T> node) { throw new UnsupportedOperationException("Not implemented yet"); }
+  private static <T> Node<T> copyOf(Node<T> node) {
+    if(node == null){
+      return null;
+    }else{
+      return new Node<>(node.element, node.weight, copyOf(node.left), copyOf(node.right));
+    }
+  }
 
   /**
    * {@inheritDoc}
    * <p> Time complexity: O(1)
    */
   @Override
-  public Comparator<T> comparator() { throw new UnsupportedOperationException("Not implemented yet"); }
+  public Comparator<T> comparator() { return comparator; }
 
   /**
    * {@inheritDoc}
    * <p> Time complexity: O(1)
    */
   @Override
-  public boolean isEmpty() { throw new UnsupportedOperationException("Not implemented yet"); }
+  public boolean isEmpty() { return root == null;}
 
   /**
    * {@inheritDoc}
    * <p> Time complexity: O(1)
    */
   @Override
-  public int size() { throw new UnsupportedOperationException("Not implemented yet"); }
+  public int size() { return weight(root); }
 
   private static int weight(Node<?> node) {
     return (node == null) ? 0 : node.weight;
@@ -180,35 +215,75 @@ public class WBLeftistHeap<T> implements Heap<T> {
    * <p> Time complexity: O(1)
    */
   @Override
-  public void clear() { throw new UnsupportedOperationException("Not implemented yet"); }
+  public void clear() { root = null; }
 
   /**
    * {@inheritDoc}
    * <p> Time complexity: O(log n)
    */
   @Override
-  public void insert(T element) { throw new UnsupportedOperationException("Not implemented yet"); }
+  public void insert(T element) {
+    Node<T> singleton = new Node<T>(element);
+    merge(root, singleton);
+  }
 
   /**
    * The core merge operation for two leftist heaps.
    *
    * @return The root of the newly merged heap.
    */
-  private Node<T> merge(Node<T> node1, Node<T> node2) { throw new UnsupportedOperationException("Not implemented yet"); }
+  private Node<T> merge(Node<T> node1, Node<T> node2) {
+    if(node1 == null){
+      return node2;
+    }
+    if(node2 == null){
+      return node1;
+    }
+
+    //both trees are non empty
+    if(comparator.compare(node1.element, node2.element) > 0){
+      Node<T> temp = node1;
+      node1 = node2;
+      node2 = temp;
+    }
+
+    //recursion on right spine
+    node1.right = merge(node1.right, node2);
+    node1.weight = 1 + weight(node1.left) + weight(node1.right);
+
+    //restore leftist property
+    if(weight(node1.right) > weight(node1.left)){
+      Node<T> temp = node1.right;
+      node1.right = node1.left;
+      node1.left = temp;
+    }
+
+    return node1;
+  }
 
   /**
    * {@inheritDoc}
    * <p> Time complexity: O(1)
    */
   @Override
-  public T minimum() { throw new UnsupportedOperationException("Not implemented yet"); }
+  public T minimum() {
+    if(isEmpty()){
+      throw new EmptyHeapException("minimum on empty heap");
+    }
+    return root.element;
+  }
 
   /**
    * {@inheritDoc}
    * <p> Time complexity: O(log n)
    */
   @Override
-  public void deleteMinimum() { throw new UnsupportedOperationException("Not implemented yet"); }
+  public void deleteMinimum() {
+    if(isEmpty()){
+      throw new EmptyHeapException("deleteMinimum on empty heap");
+    }
+    root = merge(root.left, root.right);
+  }
 
   @Override
   public String toString() {
