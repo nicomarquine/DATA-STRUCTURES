@@ -2,6 +2,7 @@ package org.uma.ed.datastructures.heap;
 
 import java.util.Comparator;
 import org.uma.ed.datastructures.list.JDKArrayList;
+import org.uma.ed.datastructures.queue.JDKQueue;
 
 /**
  * An implementation of the {@link Heap} interface using a maxiphobic heap.
@@ -108,7 +109,27 @@ public class MaxiphobicHeap<T> implements Heap<T> {
    *
    * @return skew heap with elements in nodes
    */
-  private static <T> MaxiphobicHeap<T> merge(Comparator<T> comparator, JDKArrayList<Node<T>> nodes) { throw new UnsupportedOperationException("Not implemented yet"); }
+  private static <T> MaxiphobicHeap<T> merge(Comparator<T> comparator, JDKArrayList<Node<T>> nodes) {
+    MaxiphobicHeap<T> heap = new MaxiphobicHeap<>(comparator);
+    JDKQueue<Node<T>> queue = JDKQueue.from(nodes); // Alternative to comment at bottom
+     /*JDKQueue<Node<T>> queue = JDKQueue.empty();
+     for(Node<T> node: nodes){
+         queue.enqueue(node);
+     } */
+    if(!nodes.isEmpty()) {
+      while (queue.size() > 1) {
+        Node<T> tree1 = queue.first();
+        queue.dequeue();
+
+        Node<T> tree2 = queue.first();
+        queue.dequeue();
+        Node<T> tree3 = heap.merge(tree1, tree2);
+        queue.enqueue(tree3);
+      }
+      heap.root = queue.first();
+    }
+    return heap;
+  }
 
   /**
    * Constructs a Maxiphobic Heap from a sequence of elements and a comparator.
@@ -183,28 +204,35 @@ public class MaxiphobicHeap<T> implements Heap<T> {
   }
 
   // copies a tree
-  private static <T> Node<T> copyOf(Node<T> node) { throw new UnsupportedOperationException("Not implemented yet"); }
+  private static <T> Node<T> copyOf(Node<T> node) {
+    if(node == null){
+      return null;
+    } else {
+      return new Node<>(node.element,node.weight,copyOf(node.left),copyOf(node.right));
+
+    }
+  }
 
   /**
    * {@inheritDoc}
    * <p> Time complexity: O(1)
    */
   @Override
-  public Comparator<T> comparator() { throw new UnsupportedOperationException("Not implemented yet"); }
+  public Comparator<T> comparator() {return comparator;}
 
   /**
    * {@inheritDoc}
    * <p> Time complexity: O(1)
    */
   @Override
-  public boolean isEmpty() { throw new UnsupportedOperationException("Not implemented yet"); }
+  public boolean isEmpty() {return root == null; }
 
   /**
    * {@inheritDoc}
    * <p> Time complexity: O(1)
    */
   @Override
-  public int size() { throw new UnsupportedOperationException("Not implemented yet"); }
+  public int size() { return weight(root); }
 
   private static int weight(Node<?> node) {
     return node == null ? 0 : node.weight;
@@ -215,19 +243,66 @@ public class MaxiphobicHeap<T> implements Heap<T> {
    * <p> Time complexity: O(1)
    */
   @Override
-  public void clear() { throw new UnsupportedOperationException("Not implemented yet"); }
+  public void clear() {root = null; }
 
   /**
    * {@inheritDoc}
    * <p> Time complexity: O(log n)
    */
   @Override
-  public void insert(T element) { throw new UnsupportedOperationException("Not implemented yet"); }
+  public void insert(T element) {
+    Node<T> singleton = new Node<>(element);
+    root = merge(root,singleton);
+  }
 
   /**
    * Merges two maxiphobic heaps.
    */
-  private Node<T> merge(Node<T> node1, Node<T> node2) { throw new UnsupportedOperationException("Not implemented yet"); }
+  private Node<T> merge(Node<T> node1, Node<T> node2) {
+    // base cases (any of trees are empty)
+    if(node1 == null){
+      return node2;
+    }
+    if(node2 == null){
+      return node1;
+    }
+    // recursive case: both trees are non-empty
+    // compare roots and if root of node1 is larger swap trees
+
+    if(comparator.compare(node1.element,node2.element) > 0){
+      Node<T> aux = node1;
+      node1 = node2;
+      node2 = aux;
+    }
+
+    // now node 1 is holding the minimum element at its root
+
+    // update the weight
+    node1.weight += node2.weight;
+
+    Node<T> tree1 = node1.left;
+    Node<T> tree2 = node1.right;
+    Node<T> tree3 = node2;
+
+    if(weight(tree1)<weight(tree2)){
+      Node<T> temp = tree1;
+      tree1 = tree2;
+      tree2 = temp;
+    }
+    // we know weight of tree1 > weight of tree2
+
+    // compare weights of tree1 and tree3 and swap tree3 if larger
+    if(weight(tree1) < weight(tree3)){
+      Node<T> temp = tree1;
+      tree1 = tree3;
+      tree3 = temp;
+    }
+
+    // We know weight(tree1) is the biggest out of the 3 trees
+    node1.left = tree1;
+    node1.right = merge(tree2,tree3);
+    return node1;
+  }
 
   /**
    * {@inheritDoc}
@@ -236,7 +311,14 @@ public class MaxiphobicHeap<T> implements Heap<T> {
    * @throws <code>EmptyHeapException</code> if heap stores no element.
    */
   @Override
-  public T minimum() { throw new UnsupportedOperationException("Not implemented yet"); }
+  public T minimum() {
+    if(isEmpty()){
+      throw new EmptyHeapException("minimum on empty heap");
+    }
+    return root.element;
+
+
+  }
 
   /**
    * {@inheritDoc}
@@ -245,7 +327,12 @@ public class MaxiphobicHeap<T> implements Heap<T> {
    * @throws <code>EmptyHeapException</code> if heap stores no element.
    */
   @Override
-  public void deleteMinimum() { throw new UnsupportedOperationException("Not implemented yet"); }
+  public void deleteMinimum() {
+    if(isEmpty()){
+      throw new EmptyHeapException("deleteMinimum on empty heap");
+    }
+    root = merge(root.left,root.right);
+  }
 
   /**
    * Returns representation of this heap as a String.
