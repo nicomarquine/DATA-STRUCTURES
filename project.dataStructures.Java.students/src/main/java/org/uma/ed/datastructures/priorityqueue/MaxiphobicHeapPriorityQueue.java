@@ -1,5 +1,6 @@
 package org.uma.ed.datastructures.priorityqueue;
 
+import org.uma.ed.datastructures.heap.EmptyHeapException;
 import org.uma.ed.datastructures.heap.MaxiphobicHeap;
 
 import java.util.Comparator;
@@ -99,56 +100,70 @@ public class MaxiphobicHeapPriorityQueue<T> extends AbstractPriorityQueue<T> imp
    * Creates a new {@code MaxiphobicHeapPriorityQueue} containing the same elements as the given queue.
    * <p> Time complexity: O(n)
    */
-  public static <T> MaxiphobicHeapPriorityQueue<T> copyOf(MaxiphobicHeapPriorityQueue<T> queue) { throw new UnsupportedOperationException("Not implemented yet"); }
+  public static <T> MaxiphobicHeapPriorityQueue<T> copyOf(MaxiphobicHeapPriorityQueue<T> queue) {
+    return new MaxiphobicHeapPriorityQueue<>(MaxiphobicHeap.copyOf(queue.heap));
+  }
 
   /**
    * {@inheritDoc}
    * <p> Time complexity: O(1)
    */
   @Override
-  public Comparator<T> comparator() { throw new UnsupportedOperationException("Not implemented yet"); }
+  public Comparator<T> comparator() { return heap.comparator();}
 
   /**
    * {@inheritDoc}
    * <p> Time complexity: O(1)
    */
   @Override
-  public boolean isEmpty() { throw new UnsupportedOperationException("Not implemented yet"); }
+  public boolean isEmpty() { return heap.isEmpty();}
 
   /**
    * {@inheritDoc}
    * <p> Time complexity: O(1)
    */
   @Override
-  public void clear() { throw new UnsupportedOperationException("Not implemented yet"); }
+  public void clear() { heap.clear();}
 
   /**
    * {@inheritDoc}
    * <p> Time complexity: O(1)
    */
   @Override
-  public int size() { throw new UnsupportedOperationException("Not implemented yet"); }
+  public int size() { return heap.size();}
 
   /**
    * {@inheritDoc}
    * <p> Time complexity: Amortized O(log n)
    */
   @Override
-  public void enqueue(T element) { throw new UnsupportedOperationException("Not implemented yet"); }
+  public void enqueue(T element) {
+    heap.insert(element);
+  }
 
   /**
    * {@inheritDoc}
    * <p> Time complexity: O(1)
    */
   @Override
-  public T first() { throw new UnsupportedOperationException("Not implemented yet"); }
+  public T first() {
+    if(heap.isEmpty()){
+      throw new EmptyPriorityQueueException("first on empty queue");
+    }
+    return heap.minimum();
+  }
 
   /**
    * {@inheritDoc}
    * <p> Time complexity: Amortized O(log n)
    */
   @Override
-  public void dequeue() { throw new UnsupportedOperationException("Not implemented yet"); }
+  public void dequeue() {
+    if(heap.isEmpty()){
+      throw new EmptyPriorityQueueException("dequeue on empty queue");
+    }
+    heap.deleteMinimum();
+  }
 
   /**
    * Provides an iterable that traverses the elements in priority order.
