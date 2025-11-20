@@ -108,7 +108,10 @@ public class BST<K> implements SearchTree<K> {
    * <p> Time complexity: O(1).
    */
   @Override
-  public void clear() { throw new UnsupportedOperationException("Not implemented yet"); }
+  public void clear() {
+    root = null;
+    size = 0;
+  }
 
   /**
    * {@inheritDoc}
@@ -124,14 +127,14 @@ public class BST<K> implements SearchTree<K> {
    * <p> Time complexity: O(1).
    */
   @Override
-  public boolean isEmpty() { throw new UnsupportedOperationException("Not implemented yet"); }
+  public boolean isEmpty() { return root == null; }
 
   /**
    * {@inheritDoc}
    * <p> Time complexity: O(1).
    */
   @Override
-  public int size() { throw new UnsupportedOperationException("Not implemented yet"); }
+  public int size() {return size; }
 
   /**
    * {@inheritDoc}
@@ -155,14 +158,67 @@ public class BST<K> implements SearchTree<K> {
     root = insert(root, key);
   }
 
-  private Node<K> insert(Node<K> node, K key) { throw new UnsupportedOperationException("Not implemented yet"); }
+  private Node<K> insert(Node<K> node, K key) {
+    if (node == null){
+      size++;
+      return new Node<>(key);
+    }else{
+      //non-empty
+      int cmp = comparator.compare(key, node.key);
+
+      if(cmp == 0){
+        //key is already in tree
+        node.key = key;//overwrite node with new info
+      }else if(cmp < 0){
+        //insert on the left
+        node.left = insert(node.left, key);
+      } else {
+        node.right = insert(node.right, key);
+      }
+      return node;
+    }
+  }
 
   /**
    * {@inheritDoc}
    * <p> Time complexity: O(log n) on average, O(n) in the worst case.
    */
   @Override
-  public K search(K key) { throw new UnsupportedOperationException("Not implemented yet"); }
+  public K search(K key) {
+    Node<K> current = root;
+    boolean found = false;
+
+    while(!found && current != null){
+      int cmp = comparator.compare(key, current.key);
+      if(cmp == 0){
+        found = true;
+      }else if(cmp < 0){
+        current = current.left;
+      }else{
+        current = current.right;
+      }
+    }
+    return found ? current.key : null;
+  }
+
+  private K search(Node<K> node, K key){
+    if(node == null){
+      //empty tree
+      return null;
+    }else{
+      //non-empty
+      int cmp = comparator.compare(key, node.key);
+      if(cmp == 0){
+        return node.key;
+      }else if (cmp < 0){
+        //key can be on left
+        return search(node.left, key);
+      }else{
+        return search(node.right, key);
+      }
+    }
+
+  }
 
   /**
    * {@inheritDoc}
@@ -170,7 +226,7 @@ public class BST<K> implements SearchTree<K> {
    */
   @Override
   public boolean contains(K key) {
-    throw new UnsupportedOperationException("Not implemented yet");
+    return search(key) != null;
   }
 
   /**
@@ -206,28 +262,87 @@ public class BST<K> implements SearchTree<K> {
    * <p> Time complexity: O(log n) on average, O(n) in the worst case.
    */
   @Override
-  public K minimum() { throw new UnsupportedOperationException("Not implemented yet"); }
+  public K minimum() {
+    if (root == null){
+      throw new EmptySearchTreeException("minimum on empty tree");
+    }
+    Node<K> current = root;
+    while(current.left != null){
+      current = current.left;
+    }
+    return current.key;
+  }
 
   /**
    * {@inheritDoc}
    * <p> Time complexity: O(log n) on average, O(n) in the worst case.
    */
   @Override
-  public K maximum() { throw new UnsupportedOperationException("Not implemented yet"); }
+  public K maximum() {
+    if (root == null){
+      throw new EmptySearchTreeException("maximum on empty tree");
+    }
+    return maximum(root);
+  }
+
+  private static <K> K maximum(Node<K> node){
+    if(node.right == null){
+      return node.key;
+    }else{
+      return maximum(node.right);
+    }
+  }
 
   /**
    * {@inheritDoc}
    * <p> Time complexity: O(log n) on average, O(n) in the worst case.
    */
   @Override
-  public void deleteMinimum() { throw new UnsupportedOperationException("Not implemented yet"); }
+  public void deleteMinimum() {
+    if(isEmpty()){
+      throw new EmptySearchTreeException("deleteMinimum on empty tree");
+    }
+    Node<K> previous = null;
+    Node<K> current = root;
+
+    while(current.left != null){
+      previous = current;
+      current = current.left;
+    }
+
+    //current is pointing to the node to delete
+    //previous:
+    //  if null: minimum at root
+    //  eles: parent of current
+
+    if(previous == null){
+      root = root.right;
+    }else{
+      previous.left = null;
+    }
+  }
 
   /**
    * {@inheritDoc}
    * <p> Time complexity: O(log n) on average, O(n) in the worst case.
    */
   @Override
-  public void deleteMaximum() { throw new UnsupportedOperationException("Not implemented yet"); }
+  public void deleteMaximum() {
+    if(isEmpty()){
+      throw new EmptySearchTreeException("deleteMaximum on empty tree");
+    }
+    root = deleteMaximum(root);
+  }
+
+  private Node<K> deleteMaximum(Node<K> node){
+    if(node.right == null){
+      //node holds the maximum
+      return node.left;
+    }else{
+      node.right = deleteMaximum(node.right);
+      return node;
+    }
+  }
 
   // An abstract base for traversal iterators
   private abstract class Traversal implements Iterator<K> {
