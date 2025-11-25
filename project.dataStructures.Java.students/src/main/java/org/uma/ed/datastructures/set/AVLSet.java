@@ -102,81 +102,115 @@ public class AVLSet<T> extends AbstractSortedSet<T> implements SortedSet<T> {
    * <p> This is an efficient O(n) operation as it copies the tree structure directly.
    * <p> Time complexity: O(n)
    */
-  public static <T> AVLSet<T> copyOf(AVLSet<T> that) { throw new UnsupportedOperationException("Not implemented yet"); }
+  public static <T> AVLSet<T> copyOf(AVLSet<T> that) {
+    return new AVLSet<>(AVL.copyOf(that.avlTree));
+  }
 
   /**
    * Creates a new {@code AVLSet} from any {@code SortedSet}.
    * <p> Time complexity: O(n log n) due to repeated insertions.
    */
-  public static <T> AVLSet<T> copyOf(SortedSet<T> that) { throw new UnsupportedOperationException("Not implemented yet"); }
+  public static <T> AVLSet<T> copyOf(SortedSet<T> that) {
+    AVLSet<T> copy = new AVLSet<>(that.comparator());
+    for(T element : that){
+      copy.insert(element);
+    }
+    return copy;
+  }
 
   /**
    * {@inheritDoc}
    * <p> Time complexity: O(1)
    */
   @Override
-  public Comparator<T> comparator() { throw new UnsupportedOperationException("Not implemented yet"); }
+  public Comparator<T> comparator() {
+    return avlTree.comparator();
+  }
 
   /**
    * {@inheritDoc}
    * <p> Time complexity: O(1)
    */
   @Override
-  public boolean isEmpty() { throw new UnsupportedOperationException("Not implemented yet"); }
+  public boolean isEmpty() {
+    return avlTree.isEmpty();
+  }
 
   /**
    * {@inheritDoc}
    * <p> Time complexity: O(1)
    */
   @Override
-  public int size() { throw new UnsupportedOperationException("Not implemented yet"); }
+  public int size() {
+    return avlTree.size();
+  }
 
   /**
    * {@inheritDoc}
    * <p> Time complexity: O(log n)
    */
   @Override
-  public void insert(T element) { throw new UnsupportedOperationException("Not implemented yet"); }
+  public void insert(T element) {
+    avlTree.insert(element);
+  }
 
   /**
    * {@inheritDoc}
    * <p> Time complexity: O(log n)
    */
   @Override
-  public boolean contains(T element) { throw new UnsupportedOperationException("Not implemented yet"); }
+  public boolean contains(T element) {
+    return avlTree.contains(element);
+  }
 
   /**
    * {@inheritDoc}
    * <p> Time complexity: O(log n)
    */
   @Override
-  public void delete(T element) { throw new UnsupportedOperationException("Not implemented yet"); }
+  public void delete(T element) {
+    avlTree.delete(element);
+  }
 
   /**
    * {@inheritDoc}
    * <p> Time complexity: O(1)
    */
   @Override
-  public void clear() { throw new UnsupportedOperationException("Not implemented yet"); }
+  public void clear() {
+    avlTree.clear();
+  }
 
   /**
    * {@inheritDoc}
    * <p> Time complexity: O(log n)
    */
   @Override
-  public T minimum() { throw new UnsupportedOperationException("Not implemented yet"); }
+  public T minimum() {
+    if(isEmpty()){
+      throw new NoSuchElementException("minimum on empty set");
+    }
+    return avlTree.minimum();
+  }
 
   /**
    * {@inheritDoc}
    * <p> Time complexity: O(log n)
    */
   @Override
-  public T maximum() { throw new UnsupportedOperationException("Not implemented yet"); }
+  public T maximum() {
+    if(isEmpty()){
+      throw new NoSuchElementException("minimum on empty set");
+    }
+    return avlTree.maximum();
+  }
 
   /**
    * {@inheritDoc}
    * The iterator returns elements in ascending sorted order.
    */
   @Override
-  public Iterator<T> iterator() { throw new UnsupportedOperationException("Not implemented yet"); }
+  public Iterator<T> iterator() {
+    return avlTree.inOrder().iterator();
+  }
 }
