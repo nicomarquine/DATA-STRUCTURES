@@ -1,8 +1,10 @@
 package org.uma.ed.datastructures.dictionary;
 
 import org.uma.ed.datastructures.searchtree.AVL;
+import org.uma.ed.datastructures.searchtree.EmptySearchTreeException;
 import org.uma.ed.datastructures.searchtree.SearchTree;
 
+import java.awt.*;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
@@ -104,83 +106,115 @@ public class AVLDictionary<K, V> extends AbstractSortedDictionary<K, V> implemen
    * <p> This is an efficient O(n) operation using the underlying tree's copy mechanism.
    * <p> Time complexity: O(n)
    */
-  public static <K, V> AVLDictionary<K, V> copyOf(AVLDictionary<K, V> that) { throw new UnsupportedOperationException("Not implemented yet"); }
+  public static <K, V> AVLDictionary<K, V> copyOf(AVLDictionary<K, V> that) {
+    return new AVLDictionary<>(that.comparator(), AVL.copyOf(that.avlTree));
+  }
 
   /**
    * Creates a new {@code AVLDictionary} containing the same mappings as the given sorted dictionary.
    * <p> Time complexity: O(n log n) due to repeated insertions.
    */
-  public static <K, V> AVLDictionary<K, V> copyOf(SortedDictionary<K, V> that) { throw new UnsupportedOperationException("Not implemented yet"); }
+  public static <K, V> AVLDictionary<K, V> copyOf(SortedDictionary<K, V> that) {
+    AVLDictionary<K,V> copy = new AVLDictionary<>(that.comparator());
+    for(Entry<K,V> entry : that){
+      copy.insert(entry);
+    }
+    return copy;
+  }
 
   /**
    * {@inheritDoc}
    * <p> Time complexity: O(1)
    */
   @Override
-  public boolean isEmpty() { throw new UnsupportedOperationException("Not implemented yet"); }
+  public boolean isEmpty() { return avlTree.isEmpty(); }
 
   /**
    * {@inheritDoc}
    * <p> Time complexity: O(1)
    */
   @Override
-  public int size() { throw new UnsupportedOperationException("Not implemented yet"); }
+  public int size() { return avlTree.size();}
 
   /**
    * {@inheritDoc}
    * <p> Time complexity: O(1)
    */
   @Override
-  public Comparator<K> comparator() { throw new UnsupportedOperationException("Not implemented yet"); }
+  public Comparator<K> comparator() {
+    return comparator;
+  }
 
   /**
    * {@inheritDoc}
    * <p> Time complexity: O(log n)
    */
   @Override
-  public void insert(Entry<K, V> entry) { throw new UnsupportedOperationException("Not implemented yet"); }
+  public void insert(Entry<K, V> entry) {
+    avlTree.insert(entry);
+  }
 
   /**
    * {@inheritDoc}
    * <p> Time complexity: O(log n)
    */
   @Override
-  public V valueOf(K key) { throw new UnsupportedOperationException("Not implemented yet"); }
+  public V valueOf(K key) {
+     Entry<K,V> entry = avlTree.search(Entry.withKey(key));
+     return entry == null ? null : entry.value();
+  }
 
   /**
    * {@inheritDoc}
    * <p> Time complexity: O(log n)
    */
   @Override
-  public boolean isDefinedAt(K key) { throw new UnsupportedOperationException("Not implemented yet"); }
+  public boolean isDefinedAt(K key) {
+    Entry<K,V> entry = avlTree.search(Entry.withKey(key));
+    return entry != null;
+  }
 
   /**
    * {@inheritDoc}
    * <p> Time complexity: O(log n)
    */
   @Override
-  public void delete(K key) { throw new UnsupportedOperationException("Not implemented yet"); }
+  public void delete(K key) {
+    avlTree.delete(Entry.withKey(key));
+  }
 
   /**
    * {@inheritDoc}
    * <p> Time complexity: O(1)
    */
   @Override
-  public void clear() { throw new UnsupportedOperationException("Not implemented yet"); }
+  public void clear() {
+    avlTree.clear();
+  }
 
   /**
    * {@inheritDoc}
    * <p> Time complexity: O(log n)
    */
   @Override
-  public Entry<K, V> minimum() { throw new UnsupportedOperationException("Not implemented yet"); }
+  public Entry<K, V> minimum() {
+    if(isEmpty()){
+      throw new NoSuchElementException("mimimum on empty dictionary");
+    }
+    return avlTree.minimum();
+  }
 
   /**
    * {@inheritDoc}
    * <p> Time complexity: O(log n)
    */
   @Override
-  public Entry<K, V> maximum() { throw new UnsupportedOperationException("Not implemented yet"); }
+  public Entry<K, V> maximum() {
+    if(isEmpty()){
+      throw new NoSuchElementException("maximum on empty dictionary");
+    }
+    return avlTree.maximum();
+  }
 
   /**
    * {@inheritDoc}
@@ -205,7 +239,9 @@ public class AVLDictionary<K, V> extends AbstractSortedDictionary<K, V> implemen
    * <p> Time complexity: O(n) for the full iteration.
    */
   @Override
-  public Iterable<Entry<K, V>> entries() { throw new UnsupportedOperationException("Not implemented yet"); }
+  public Iterable<Entry<K, V>> entries() {
+    return avlTree.inOrder();
+  }
 
   @Override
   public Iterator<Entry<K, V>> iterator() {
