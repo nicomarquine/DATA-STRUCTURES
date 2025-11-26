@@ -91,7 +91,17 @@ public class BST<K> implements SearchTree<K> {
    * tree than an inorder traversal, though it does not guarantee balance.
    * <p> Time complexity: O(n^2) in the worst case, due to repeated insertions.
    */
-  public static <K> BST<K> copyOf(SearchTree<K> that) { throw new UnsupportedOperationException("Not implemented yet"); }
+  public static <K> BST<K> copyOf(SearchTree<K> that) {
+    // New empty BST with same comparator
+    BST<K> copy = new BST<>(that.comparator());
+
+    // Insert keys following preorder traversal
+    for (K key : that.preOrder()) {
+      copy.insert(key);
+    }
+
+    return copy;
+  }
 
   /**
    * Creates a new {@code BST} that is an exact structural copy of the given {@code BST}.
@@ -101,7 +111,17 @@ public class BST<K> implements SearchTree<K> {
     return new BST<>(that.comparator, copyOf(that.root), that.size);
   }
 
-  private static <K> Node<K> copyOf(Node<K> node) { throw new UnsupportedOperationException("Not implemented yet"); }
+  private static <K> Node<K> copyOf(Node<K> node) {
+    if (node == null) {
+      return null;
+    }
+
+    Node<K> newNode = new Node<>(node.key);
+    newNode.left = copyOf(node.left);
+    newNode.right = copyOf(node.right);
+
+    return newNode;
+  }
 
   /**
    * {@inheritDoc}
@@ -239,7 +259,49 @@ public class BST<K> implements SearchTree<K> {
   }
 
   // returns modified tree
-  private Node<K> delete(Node<K> node, K key) { throw new UnsupportedOperationException("Not implemented yet"); }
+  private Node<K> delete(Node<K> node, K key) {
+    if (node == null) {
+      return null; // key not found
+    }
+
+    int cmp = comparator.compare(key,node.key);
+
+    if (cmp < 0) {
+      // search in left subtree
+      node.left = delete(node.left, key);
+    } else if (cmp > 0) {
+      // search in right subtree
+      node.right = delete(node.right, key);
+    } else {
+      // node to delete found
+
+      // Case 1: no left child
+      if (node.left == null) {
+        size--;
+        return node.right;
+      }
+
+      // Case 2: no right child
+      if (node.right == null) {
+        size--;
+        return node.left;
+      }
+
+      // Case 3: two children
+      // find inorder successor (minimum in right subtree)
+      Node<K> successor = node.right;
+      while (successor.left != null) {
+        successor = successor.left;
+      }
+
+      // replace current node’s key with successor’s key
+      node.key = successor.key;
+
+      // delete successor from right subtree
+      node.right = delete(node.right, successor.key);
+    }
+    return node;
+  }
 
   /**
    * Precondition: node is a non-empty tree. Removes minimum key from tree rooted at node. Before deletion, key is saved
@@ -320,6 +382,7 @@ public class BST<K> implements SearchTree<K> {
     }else{
       previous.left = null;
     }
+    size--;
   }
 
   /**
@@ -332,6 +395,7 @@ public class BST<K> implements SearchTree<K> {
       throw new EmptySearchTreeException("deleteMaximum on empty tree");
     }
     root = deleteMaximum(root);
+    size--;
   }
 
   private Node<K> deleteMaximum(Node<K> node){
