@@ -126,7 +126,7 @@ public final class BinaryTree {
    * @param root the root node of the tree.
    * @return the sum of all integer elements in the tree.
    */
-  public static int sum(Node<Integer> root) { throw new UnsupportedOperationException("Not implemented yet"); }
+  public static int sum(Node<Integer> root) { throw new UnsupportedOperationException("not implemented yet"); }
 
   /**
    * Finds the maximum element in a binary tree.
@@ -166,7 +166,17 @@ public final class BinaryTree {
    * @param element the element to count.
    * @return the number of times the element appears in the tree.
    */
-  public static <T> int count(Node<T> root, T element) { throw new UnsupportedOperationException("Not implemented yet"); }
+  public static <T> int count(Node<T> root, T element) {
+    int c = 0;
+    if(root != null){
+      if(root.element.equals(element)){
+        c++;
+      }
+      c = count(root.left, element);
+      c = count(root.right, element);
+    }
+    return c;
+  }
 
   /**
    * Returns a list containing all the leaf elements of a binary tree.
@@ -176,9 +186,9 @@ public final class BinaryTree {
    * @return a {@code List} of the leaf elements.
    */
   public static <T> List<T> leaves(Node<T> root) {
-    List<T> leavesList = JDKArrayList.empty();
-    collectLeaves(root, leavesList);
-    return leavesList;
+    List<T> list = new JDKArrayList<>();
+    collectLeaves(root, list);
+    return list;
   }
 
   /**
@@ -187,7 +197,16 @@ public final class BinaryTree {
    * @param node       the current node being visited.
    * @param leavesList the list where leaf elements are collected.
    */
-  private static <T> void collectLeaves(Node<T> node, List<T> leavesList) { throw new UnsupportedOperationException("Not implemented yet"); }
+  private static <T> void collectLeaves(Node<T> node, List<T> leavesList) {
+    if(node != null){
+      if(node.left == null && node.right == null){
+        leavesList.append(node.element);
+      }else{
+        collectLeaves(node.left, leavesList);
+        collectLeaves(node.right, leavesList);
+      }
+    }
+  }
 
   /**
    * Performs a preorder traversal of a binary tree.

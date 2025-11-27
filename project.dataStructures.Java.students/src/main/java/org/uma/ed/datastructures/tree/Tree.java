@@ -116,7 +116,16 @@ public final class Tree {
    * @param root the root node of the tree.
    * @return the sum of all integer elements in the tree.
    */
-  public static int sum(Node<Integer> root) { throw new UnsupportedOperationException("Not implemented yet"); }
+  public static int sum(Node<Integer> root) {
+    int s = 0;
+    if (root != null){
+      s += root.element;
+      for(Node<Integer> child : root.children ){
+        s += sum(child);
+      }
+    }
+    return s;
+  }
 
   /**
    * Finds the maximum element in a tree.
@@ -151,7 +160,18 @@ public final class Tree {
    * @param element the element to count.
    * @return the number of times the element appears in the tree.
    */
-  public static <T> int count(Node<T> root, T element) { throw new UnsupportedOperationException("Not implemented yet"); }
+  public static <T> int count(Node<T> root, T element) {
+    int c = 0;
+    if(root != null){
+      if (root.element.equals(element)){
+        c++;
+      }
+      for(Node<T> child : root.children){
+        c += count(child,element);
+      }
+    }
+    return c;
+  }
 
   /**
    * Returns a list containing all the leaf elements of a tree.
@@ -166,7 +186,18 @@ public final class Tree {
     return leavesList;
   }
 
-  private static <T> void collectLeaves(Node<T> node, List<T> leavesList) { throw new UnsupportedOperationException("Not implemented yet"); }
+  private static <T> void collectLeaves(Node<T> node, List<T> leavesList) {
+    if(node != null){
+      if(node.children.isEmpty()){
+        leavesList.append(node.element);
+      }else{
+        //non-leaf node
+        for(Node<T> child : node.children){
+          collectLeaves(child, leavesList);
+        }
+      }
+    }
+  }
 
   /**
    * Performs a preorder traversal of a tree.
@@ -181,7 +212,15 @@ public final class Tree {
     return traversal;
   }
 
-  private static <T> void buildPreorder(Node<T> node, List<T> traversal) { throw new UnsupportedOperationException("Not implemented yet"); }
+  private static <T> void buildPreorder(Node<T> node, List<T> traversal) {
+    if(node != null){
+      //tree is non-empty
+      traversal.append(node.element);
+      for(Node<T> child : node.children){
+        buildPreorder(child, traversal);
+      }
+    }
+  }
 
   /**
    * Performs a postorder traversal of a tree.
@@ -196,7 +235,15 @@ public final class Tree {
     return traversal;
   }
 
-  private static <T> void buildPostorder(Node<T> node, List<T> traversal) { throw new UnsupportedOperationException("Not implemented yet"); }
+  private static <T> void buildPostorder(Node<T> node, List<T> traversal) {
+    if(node != null){
+      //tree is non-empty
+      for(Node<T> child : node.children){
+        buildPostorder(child, traversal);
+      }
+      traversal.append(node.element);
+    }
+  }
 
   /**
    * Performs a breadth-first (level-order) traversal of a tree.
@@ -205,5 +252,21 @@ public final class Tree {
    * @param root the root node of the tree.
    * @return a {@code List} containing the elements in breadth-first sequence.
    */
-  public static <T> List<T> breadthFirst(Node<T> root) { throw new UnsupportedOperationException("Not implemented yet"); }
+  public static <T> List<T> breadthFirst(Node<T> root) {
+    List<T> traversal = JDKArrayList.empty();
+    if (root != null) {
+      Queue<Node<T>> queue = JDKQueue.empty();
+      while(!queue.isEmpty()){
+        Node<T> tree = queue.first();
+        queue.dequeue();;
+
+        traversal.append(tree.element);
+
+        for(Node<T> child : tree.children){
+          queue.enqueue(child);
+        }
+      }
+    }
+    return traversal;
+  }
 }
