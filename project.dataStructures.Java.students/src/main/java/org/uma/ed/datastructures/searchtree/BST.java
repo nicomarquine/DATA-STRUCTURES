@@ -261,48 +261,28 @@ public class BST<K> implements SearchTree<K> {
   // returns modified tree
   private Node<K> delete(Node<K> node, K key) {
     if (node == null) {
-      return null; // key not found
-    }
-
-    int cmp = comparator.compare(key,node.key);
-
-    if (cmp < 0) {
-      // search in left subtree
-      node.left = delete(node.left, key);
-    } else if (cmp > 0) {
-      // search in right subtree
-      node.right = delete(node.right, key);
+      return null;
     } else {
-      // node to delete found
-
-      // Case 1: no left child
-      if (node.left == null) {
+      int cmp = comparator.compare(key, node.key);
+      if (cmp < 0) {
+        node.left = delete(node.left, key);
+      } else if (cmp > 0) {
+        node.right = delete(node.right, key);
+      } else {
+        // found the key
+        if (node.left == null) {
+          node = node.right;
+        } else if (node.right == null) {
+          node = node.left;
+        } else {
+          // We have 2 children
+          node.right = split(node.right, node);
+        }
         size--;
-        return node.right;
       }
-
-      // Case 2: no right child
-      if (node.right == null) {
-        size--;
-        return node.left;
-      }
-
-      // Case 3: two children
-      // find inorder successor (minimum in right subtree)
-      Node<K> successor = node.right;
-      while (successor.left != null) {
-        successor = successor.left;
-      }
-
-      // replace current node’s key with successor’s key
-      node.key = successor.key;
-
-      // delete successor from right subtree
-      node.right = delete(node.right, successor.key);
+      return node;
     }
-    return node;
   }
-
   /**
    * Precondition: node is a non-empty tree. Removes minimum key from tree rooted at node. Before deletion, key is saved
    * into temp node. Returns modified tree (without min key).
