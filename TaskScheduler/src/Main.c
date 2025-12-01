@@ -9,8 +9,8 @@
 /* must be undefined (#undef)                                                 */
 /*============================================================================*/
 
-#define RUN_TESTS
-#undef RUN_DEMO
+#define RUN_DEMO
+#undef RUN_TESTS
 
 
 #ifdef __GNUC__
