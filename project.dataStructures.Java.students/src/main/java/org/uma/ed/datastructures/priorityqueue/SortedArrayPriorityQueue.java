@@ -186,23 +186,29 @@ public class SortedArrayPriorityQueue<T> extends AbstractPriorityQueue<T> implem
    */
   @Override
   public void enqueue(T element) {
-    int left = 0, right = size-1;
-    while(left <=right){
-      // int mid = (left + right) / 2;
-      int mid = left + (right-left) / 2; // To prevent overflow
+    // Binary search to find insertion position
+    int left = 0, right = size - 1;
+
+    while (left <= right) {
+      int mid = left + (right - left) / 2;
       int cmp = comparator.compare(element, elements[mid]);
-      if(cmp == 0){
-        right = mid -1;
-      } else{
+
+      if (cmp > 0) {
+        // new element is greater → insert to the right
         left = mid + 1;
+      } else {
+        // new element is smaller or equal → insert to the left
+        right = mid - 1;
       }
     }
-    // left is the insertion point for new element
+
+    // left is the insertion point
     ensureCapacity();
-    //move elements to right
-    for(int i = size; i> left ; i--){
-      elements[i] = elements[i-1];
+
+    for (int i = size; i > left; i--) {
+      elements[i] = elements[i - 1];
     }
+
     elements[left] = element;
     size++;
   }
@@ -218,7 +224,7 @@ public class SortedArrayPriorityQueue<T> extends AbstractPriorityQueue<T> implem
       throw new EmptyPriorityQueueException("First on empty queue" );
 
     }
-    return elements[size-1];
+    return elements[size - 1];
   }
 
   /**

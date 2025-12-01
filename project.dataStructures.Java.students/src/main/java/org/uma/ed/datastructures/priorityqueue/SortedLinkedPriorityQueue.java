@@ -173,35 +173,53 @@ public class SortedLinkedPriorityQueue<T> extends AbstractPriorityQueue<T> imple
    * <p> Time complexity: O(1)
    */
   @Override
-  public boolean isEmpty() { throw new UnsupportedOperationException("Not implemented yet"); }
+  public boolean isEmpty() {
+    return size == 0;
+  }
 
   /**
    * {@inheritDoc}
    * <p> Time complexity: O(1)
    */
   @Override
-  public void clear() { throw new UnsupportedOperationException("Not implemented yet"); }
+  public void clear() {
+    first = null;
+    size = 0;
+  }
 
   /**
    * {@inheritDoc}
    * <p> Time complexity: O(1)
    */
   @Override
-  public int size() { throw new UnsupportedOperationException("Not implemented yet"); }
+  public int size() {
+    return size;
+  }
 
   /**
    * {@inheritDoc}
    * <p> Time complexity: O(1)
    */
   @Override
-  public T first() { throw new UnsupportedOperationException("Not implemented yet"); }
+  public T first() {
+    if(isEmpty()){
+      throw new EmptyPriorityQueueException("first on empty queue");
+    }
+    return first.element;
+  }
 
   /**
    * {@inheritDoc}
    * <p> Time complexity: O(1)
    */
   @Override
-  public void dequeue() { throw new UnsupportedOperationException("Not implemented yet"); }
+  public void dequeue() {
+    if (isEmpty()) {
+      throw new EmptyPriorityQueueException("dequeue on empty queue");
+    }
+    first = first.next;
+    size--;
+  }
 
   /**
    * {@inheritDoc}
@@ -210,7 +228,39 @@ public class SortedLinkedPriorityQueue<T> extends AbstractPriorityQueue<T> imple
    * <p> Time complexity: O(n)
    */
   @Override
-  public void enqueue(T element) { throw new UnsupportedOperationException("Not implemented yet"); }
+  public void enqueue(T element) {
+    Node<T> newNode = new Node<>(element, null);
+
+    // Caso base: lista vacía
+    if (first == null) {
+      first = newNode;
+      size++;
+      return;
+    }
+
+    Node<T> prev = null;
+    Node<T> curr = first;
+
+    // Recorremos mientras curr.element <= element
+    // Esto mantiene orden ascendente y permite duplicados correctamente
+    while (curr != null && comparator.compare(curr.element, element) <= 0) {
+      prev = curr;
+      curr = curr.next;
+    }
+
+    // Insertar al principio (nuevo mínimo)
+    if (prev == null) {
+      newNode.next = first;
+      first = newNode;
+    }
+    // Insertar en medio o al final
+    else {
+      prev.next = newNode;
+      newNode.next = curr;
+    }
+
+    size++;
+  }
 
   /**
    * Provides an iterable that traverses the elements in priority order (front to rear).
