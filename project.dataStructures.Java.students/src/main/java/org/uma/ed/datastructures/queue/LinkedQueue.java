@@ -117,7 +117,21 @@ public class LinkedQueue<T> extends AbstractQueue<T> implements Queue<T> {
    * @param that the {@code LinkedQueue} to be copied.
    * @return a new {@code LinkedQueue} with the same elements and order.
    */
-  public static <T> LinkedQueue<T> copyOf(LinkedQueue<T> that) { throw new UnsupportedOperationException("Not implemented yet"); }
+  public static <T> LinkedQueue<T> copyOf(LinkedQueue<T> that) {
+    LinkedQueue<T> copy = new LinkedQueue<>();
+
+    if (that.first == null) {
+      return copy;  // cola vacía
+    }
+
+    Node<T> current = that.first;
+    while (current != null) {
+      copy.enqueue(current.element);   // copiar en el mismo orden
+      current = current.next;
+    }
+
+    return copy;
+  }
 
   /**
    * Creates a new {@code LinkedQueue} containing the same elements as the given queue.
@@ -132,7 +146,26 @@ public class LinkedQueue<T> extends AbstractQueue<T> implements Queue<T> {
    * @param that the generic {@code Queue} to be copied.
    * @return a new {@code LinkedQueue} with the same elements and order.
    */
-  public static <T> LinkedQueue<T> copyOf(Queue<T> that) { throw new UnsupportedOperationException("Not implemented yet"); }
+  public static <T> LinkedQueue<T> copyOf(Queue<T> that) {
+    LinkedQueue<T> copy = new LinkedQueue<>();
+    LinkedQueue<T> aux = new LinkedQueue<>();
+
+    while (!that.isEmpty()) {
+      T elem = that.first();   // consultar primero
+      that.dequeue();          // extraer
+      copy.enqueue(elem);      // copiar en orden
+      aux.enqueue(elem);       // guardar para restaurar
+    }
+
+    // restaurar cola original
+    while (!aux.isEmpty()) {
+      T elem = aux.first();
+      aux.dequeue();
+      that.enqueue(elem);
+    }
+
+    return copy;
+  }
 
   /**
    * {@inheritDoc}
