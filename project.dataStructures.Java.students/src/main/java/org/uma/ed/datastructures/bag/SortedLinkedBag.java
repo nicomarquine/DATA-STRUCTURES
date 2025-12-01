@@ -1,5 +1,8 @@
 package org.uma.ed.datastructures.bag;
 
+import org.uma.ed.datastructures.heap.BinaryHeap;
+
+import javax.imageio.plugins.tiff.TIFFTagSet;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
@@ -149,21 +152,25 @@ public class SortedLinkedBag<T> extends AbstractSortedBag<T> implements SortedBa
    * <p> Time complexity: O(1)
    */
   @Override
-  public boolean isEmpty() { throw new UnsupportedOperationException("Not implemented yet"); }
+  public boolean isEmpty() { return size == 0; }
 
   /**
    * {@inheritDoc}
    * <p> Time complexity: O(1)
    */
   @Override
-  public int size() { throw new UnsupportedOperationException("Not implemented yet"); }
+  public int size() { return size; }
 
   /**
    * {@inheritDoc}
    * <p> Time complexity: O(1)
    */
   @Override
-  public void clear() { throw new UnsupportedOperationException("Not implemented yet"); }
+  public void clear() {
+    first = null;
+    last = null;
+    size = 0;
+  }
 
   /**
    * A helper class that encapsulates the logic for finding an element (or its
@@ -220,35 +227,98 @@ public class SortedLinkedBag<T> extends AbstractSortedBag<T> implements SortedBa
    * <p> Time complexity: O(n)
    */
   @Override
-  public void insert(T element) { throw new UnsupportedOperationException("Not implemented yet"); }
+  public void insert(T element) {
+    if(isEmpty()){
+      Node<T> node = new Node<>(element, 1, null);
+      first = node;
+      last = node;
+      size = 1;
+    }else {
+      Finder finder = new Finder(element);
+      if (!finder.found) {
+        if (finder.previous == null) {
+          Node<T> node = new Node<>(element, 1, first);
+          first = node;
+        } else if (finder.current == null) {
+          Node<T> node = new Node<>(element, 1, null);
+          last.next = node;
+          last = node;
+        } else {
+          Node<T> node = new Node<>(element, 1, finder.current);
+          finder.previous.next = node;
+        }
+        size++;
+      } else {
+        finder.current.occurrences++;
+        size++;
+      }
+    }
+  }
 
   /**
    * {@inheritDoc}
    * <p> Time complexity: O(n)
    */
   @Override
-  public void delete(T element) { throw new UnsupportedOperationException("Not implemented yet"); }
+  public void delete(T element) {
+    if(isEmpty()){
+      throw new NoSuchElementException("delete on empty bag");
+    }
+
+    Finder finder = new Finder(element);
+    if(finder.found){
+      if(finder.current.occurrences > 1){
+        finder.current.occurrences--;
+        size--;
+      }else{
+        if (finder.previous == null) {
+          first = first.next;
+          if (first == null) last = null; // la lista queda vacía
+        } else if (finder.current == last) {
+          last = finder.previous;
+        } else {
+          finder.previous.next = finder.current.next;
+        }
+        size--;
+      }
+    }
+  }
 
   /**
    * {@inheritDoc}
    * <p> Time complexity: O(n)
    */
   @Override
-  public int occurrences(T element) { throw new UnsupportedOperationException("Not implemented yet"); }
+  public int occurrences(T element) {
+    Finder finder = new Finder(element);
+    return finder.found ? finder.current.occurrences : 0;
+  }
 
   /**
    * {@inheritDoc}
    * <p> Time complexity: O(1)
    */
   @Override
-  public T minimum() { throw new UnsupportedOperationException("Not implemented yet"); }
+  public T minimum() {
+    if(isEmpty()){
+      throw new NoSuchElementException("minimum on empty bag");
+    }
+
+    return first.element;
+  }
 
   /**
    * {@inheritDoc}
    * <p> Time complexity: O(1)
    */
   @Override
-  public T maximum() { throw new UnsupportedOperationException("Not implemented yet"); }
+  public T maximum() {
+    if(isEmpty()){
+      throw new NoSuchElementException("minimum on empty bag");
+    }
+
+    return last.element;
+  }
 
   @Override
   public Iterator<T> iterator() {
@@ -275,7 +345,28 @@ public class SortedLinkedBag<T> extends AbstractSortedBag<T> implements SortedBa
     }
 
     @Override
-    public T next() { throw new UnsupportedOperationException("Not implemented yet"); }
+    public T next() {
+      if (!hasNext()) {
+        throw new NoSuchElementException("No more elements in BagIterator");
+      }
+      T elem = currentNode.element;
+      occurrencesLeft--;
+
+      // si aún quedan ocurrencias del mismo elemento
+      if (occurrencesLeft > 0) {
+        return elem;
+      }
+
+      // si NO quedan ocurrencias, avanzar al siguiente nodo
+      currentNode = currentNode.next;
+
+      // si no hemos terminado, cargar ocurrencias del siguiente nodo
+      if (currentNode != null) {
+        occurrencesLeft = currentNode.occurrences;
+      }
+
+      return elem;
+    }
   }
 
   /**
@@ -312,7 +403,54 @@ public class SortedLinkedBag<T> extends AbstractSortedBag<T> implements SortedBa
   /**
    * Efficiently modifies this bag to be the union with another {@code SortedLinkedBag}.
    */
-  public void union(SortedLinkedBag<T> that) { throw new UnsupportedOperationException("Not implemented yet"); }
+  public void union(SortedLinkedBag<T> that) {
+    Node<T> p = this.first;
+    Node<T> q = that.first;
+    Node<T> prev = null;
+
+    while(p != null && q != null){
+      int cmp = comparator.compare(p.element, q.element);
+
+      if(cmp < 0){
+        prev = p;
+        p = p.next;
+      }else if (cmp > 0){
+        // q < p → insertar nodo de q antes de p
+        Node<T> newNode = new Node<>(q.element, q.occurrences, p);
+        if (prev == null) {
+          first = newNode;
+        } else {
+          prev.next = newNode;
+        }
+        prev = newNode;
+
+        size += q.occurrences;
+        q = q.next;
+      }else {
+        // p == q → sumar ocurrencias
+        p.occurrences += q.occurrences;
+        size += q.occurrences;
+
+        prev = p;
+        p = p.next;
+        q = q.next;
+      }
+    }
+    // Si quedan elementos en that → añadirlos al final
+    while (q != null) {
+      Node<T> newNode = new Node<>(q.element, q.occurrences, null);
+      if (prev == null) {
+        first = newNode;
+      } else {
+        prev.next = newNode;
+      }
+      prev = newNode;
+      last = newNode;
+
+      size += q.occurrences;
+      q = q.next;
+    }
+  }
 
   /**
    * Modifies this bag to be the intersection with the given bag. Inefficient.
@@ -322,7 +460,41 @@ public class SortedLinkedBag<T> extends AbstractSortedBag<T> implements SortedBa
   /**
    * Efficiently modifies this bag to be the intersection with another {@code SortedLinkedBag}.
    */
-  public void intersection(SortedLinkedBag<T> that) { throw new UnsupportedOperationException("Not implemented yet"); }
+  public void intersection(SortedLinkedBag<T> that) {
+    Node<T> p = this.first;
+    Node<T> q = that.first;
+
+    Node<T> newFirst = null;
+    Node<T> newLast = null;
+    int newSize = 0;
+
+    while (p != null && q != null) {
+      int cmp = comparator.compare(p.element, q.element);
+
+      if (cmp < 0) {
+        p = p.next;
+      } else if (cmp > 0) {
+        q = q.next;
+      } else {
+        // mismo elemento
+        int occ = Math.min(p.occurrences, q.occurrences);
+        if (occ > 0) {
+          Node<T> node = new Node<>(p.element, occ, null);
+          if (newFirst == null) newFirst = node;
+          else newLast.next = node;
+          newLast = node;
+          newSize += occ;
+        }
+        p = p.next;
+        q = q.next;
+      }
+    }
+
+    // sustituimos this por la nueva lista
+    this.first = newFirst;
+    this.last = newLast;
+    this.size = newSize;
+  }
 
   /**
    * Modifies this bag to be the difference with the given bag. Inefficient.
@@ -332,5 +504,46 @@ public class SortedLinkedBag<T> extends AbstractSortedBag<T> implements SortedBa
   /**
    * Efficiently modifies this bag to be the difference with another {@code SortedLinkedBag}.
    */
-  public void difference(SortedLinkedBag<T> that) { throw new UnsupportedOperationException("Not implemented yet"); }
+  public void difference(SortedLinkedBag<T> that) {Node<T> p = this.first;
+    Node<T> q = that.first;
+
+    Node<T> newFirst = null;
+    Node<T> newLast = null;
+    int newSize = 0;
+
+    while (p != null) {
+      int cmp = (q == null ? -1 : comparator.compare(p.element, q.element));
+
+      if (q == null || cmp < 0) {
+        // elemento solo en this → copiar entero
+        Node<T> node = new Node<>(p.element, p.occurrences, null);
+        if (newFirst == null) newFirst = node;
+        else newLast.next = node;
+        newLast = node;
+        newSize += p.occurrences;
+
+        p = p.next;
+      } else if (cmp > 0) {
+        // avanzar en that
+        q = q.next;
+      } else {
+        // mismo elemento → restar ocurrencias
+        int occ = p.occurrences - q.occurrences;
+
+        if (occ > 0) {
+          Node<T> node = new Node<>(p.element, occ, null);
+          if (newFirst == null) newFirst = node;
+          else newLast.next = node;
+          newLast = node;
+          newSize += occ;
+        }
+
+        p = p.next;
+        q = q.next;
+      }
+    }
+
+    this.first = newFirst;
+    this.last = newLast;
+    this.size = newSize;}
 }
