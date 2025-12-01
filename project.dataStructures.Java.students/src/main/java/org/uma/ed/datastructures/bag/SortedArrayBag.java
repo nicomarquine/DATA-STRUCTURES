@@ -141,7 +141,39 @@ public class SortedArrayBag<T> extends AbstractSortedBag<T> implements SortedBag
    * <p>Time complexity: O(m), where m is the total number of elements in the source bag.</p>
    */
   public static <T> SortedArrayBag<T> copyOf(SortedBag<T> that) {
-    throw new UnsupportedOperationException("Not implemented yet");
+    if (that == null) {
+      throw new IllegalArgumentException("Bag cannot be null");
+    }
+
+    SortedArrayBag<T> copy = new SortedArrayBag<>(that.comparator());
+
+    T previous = null;
+    int occurrences = 0;
+
+    for (T elem : that) {
+      if (previous == null) {
+        previous = elem;
+        occurrences = 1;
+      } else if (copy.comparator.compare(elem, previous) == 0) {
+        occurrences++;
+      } else {
+        // cerrar el bin anterior
+        copy.ensureCapacity();
+        copy.elements[copy.bins++] = new Bin<>(previous, occurrences);
+        previous = elem;
+        occurrences = 1;
+      }
+    }
+
+    // cerrar último bin si hay elementos
+    if (previous != null) {
+      copy.ensureCapacity();
+      copy.elements[copy.bins++] = new Bin<>(previous, occurrences);
+    }
+
+    copy.size = that.size();
+
+    return copy;
   }
 
   @Override
@@ -151,12 +183,12 @@ public class SortedArrayBag<T> extends AbstractSortedBag<T> implements SortedBag
 
   @Override
   public boolean isEmpty() {
-    throw new UnsupportedOperationException("Not implemented yet");
+    return bins == 0;
   }
 
   @Override
   public int size() {
-    throw new UnsupportedOperationException("Not implemented yet");
+    return size;
   }
 
   /**
@@ -185,32 +217,85 @@ public class SortedArrayBag<T> extends AbstractSortedBag<T> implements SortedBag
 
   @Override
   public int occurrences(T element) {
-    throw new UnsupportedOperationException("Not implemented yet");
+    Finder finder = new Finder(element);
+
+    return finder.found ? elements[finder.index].occurrences : 0;
   }
 
   @Override
   public void insert(T element) {
-    throw new UnsupportedOperationException("Not implemented yet");
+    Finder find = new Finder(element);
+    if(isEmpty()){
+      elements[0] = new Bin<>(element, 1);
+      size++;
+      bins++;
+    }else{
+      if(find.found){
+        elements[find.index] = new Bin<>(element, elements[find.index].occurrences + 1);
+        size++;
+      }else{
+        ensureCapacity();
+        int insertPos = find.index; // posición donde debe ir
+        // desplazar hacia la derecha: USAR bins (no size)
+        for (int j = bins; j > insertPos; j--) {
+          elements[j] = elements[j - 1];
+        }
+
+        elements[insertPos] = new Bin<>(element,1);
+        size++;
+        bins++;
+      }
+    }
   }
 
   @Override
   public void delete(T element) {
-    throw new UnsupportedOperationException("Not implemented yet");
+    if(isEmpty()){
+      throw new NoSuchElementException("delete on empty bag");
+    }else{
+      Finder find = new Finder(element);
+      if(find.found){
+        if(elements[find.index].occurrences > 1){
+          elements[find.index] = new Bin<>(element, elements[find.index].occurrences - 1);
+          size--;
+        }else{
+          for(int i = find.index; i < size; i++){
+            elements[i] = elements[i+1];
+          }
+          size--;
+          bins--;
+        }
+      }
+    }
   }
 
   @Override
   public void clear() {
-    throw new UnsupportedOperationException("Not implemented yet");
+    if(isEmpty()){
+      throw new NoSuchElementException("clear on empty bag");
+    }
+
+    for(int i = 0; i < elements.length; i++){
+      elements[i] = null;
+    }
+    size = 0;
+    bins = 0;
   }
 
   @Override
   public T minimum() {
-    throw new UnsupportedOperationException("Not implemented yet");
+    if(isEmpty()){
+      throw new NoSuchElementException("minimum on empty bag");
+    }
+    return elements[0].element;
   }
 
   @Override
   public T maximum() {
-    throw new UnsupportedOperationException("Not implemented yet");
+    if(isEmpty()){
+      throw new NoSuchElementException("minimum on empty bag");
+    }
+    return elements[bins - 1].element;
   }
 
   @Override
@@ -238,7 +323,27 @@ public class SortedArrayBag<T> extends AbstractSortedBag<T> implements SortedBag
 
     @Override
     public T next() {
-      throw new UnsupportedOperationException("Not implemented yet");
+      if (!hasNext()) {
+        throw new NoSuchElementException("No more elements in BagIterator");
+      }
+
+      // elemento actual
+      T elem = elements[binIndex].element();
+
+      // consumir una ocurrencia
+      occurrencesLeft--;
+
+      // si se han agotado las ocurrencias de este bin...
+      if (occurrencesLeft == 0) {
+        binIndex++;  // pasar al siguiente bin
+
+        // si no hemos acabado, cargar sus ocurrencias
+        if (binIndex < bins) {
+          occurrencesLeft = elements[binIndex].occurrences();
+        }
+      }
+
+      return elem;
     }
   }
 }
