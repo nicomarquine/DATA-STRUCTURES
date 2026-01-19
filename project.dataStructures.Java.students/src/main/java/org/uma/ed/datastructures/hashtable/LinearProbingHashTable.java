@@ -99,14 +99,14 @@ public class LinearProbingHashTable<K> implements HashTable<K> {
    * <p> Time complexity: O(1)
    */
   @Override
-  public boolean isEmpty() { throw new UnsupportedOperationException("Not implemented yet"); }
+  public boolean isEmpty() { return size == 0; }
 
   /**
    * {@inheritDoc}
    * <p> Time complexity: O(1)
    */
   @Override
-  public int size() { throw new UnsupportedOperationException("Not implemented yet"); }
+  public int size() { return size; }
 
   /**
    * Primary hash function to map a key to an initial cell index.
@@ -147,35 +147,78 @@ public class LinearProbingHashTable<K> implements HashTable<K> {
    * <p> Time complexity: Near O(1) on average. Can be O(n) if rehashing occurs.
    */
   @Override
-  public void insert(K key) { throw new UnsupportedOperationException("Not implemented yet"); }
+  public void insert(K key) {
+    if (loadFactor() > maxLoadFactor){
+      rehashing();
+    }
+    int index = searchIndex(key);
+
+    if(keys[index] == null){
+      //key is not in tabble
+      size++;
+    }
+    keys[index] = key;
+  }
 
   /**
    * {@inheritDoc}
    * <p> Time complexity: Near O(1) on average.
    */
   @Override
-  public K search(K key) { throw new UnsupportedOperationException("Not implemented yet"); }
+  public K search(K key) {
+    int index = searchIndex(key);
+    return keys[index];
+  }
 
   /**
    * {@inheritDoc}
    * <p> Time complexity: Near O(1) on average.
    */
   @Override
-  public boolean contains(K key) { throw new UnsupportedOperationException("Not implemented yet"); }
+  public boolean contains(K key) {
+    int index = searchIndex(key);
+    return keys[index] != null;
+  }
 
   /**
    * {@inheritDoc}
    * <p> Time complexity: near O(1)
    */
   @Override
-  public void delete(K key) { throw new UnsupportedOperationException("Not implemented yet"); }
+  public void delete(K key) {
+    int index = searchIndex(key);
+
+    if (keys[index] != null){
+      //found, remove it
+      keys[index] = null;
+      size--;
+
+      //reinsert all elements after this one in same cluster
+      index = advance(index);
+      while (keys[index] != null){
+        //grab a copy
+        K keyToReinsert = keys[index];
+        //remove the element
+        keys[index] = null;
+        int newIndex = searchIndex(keyToReinsert);
+        keys[newIndex] = keyToReinsert;
+
+        index = advance(index);
+      }
+    }
+  }
 
   /**
    * {@inheritDoc}
    * <p> Time complexity: O(n), where n is the capacity.
    */
   @Override
-  public void clear() { throw new UnsupportedOperationException("Not implemented yet"); }
+  public void clear() {
+    for (int i = 0; i < keys.length; i++) {
+      keys[i] = null;
+    }
+    size = 0;
+  }
 
   /**
    * Doubles the table size to the next prime number and re-inserts all keys.
