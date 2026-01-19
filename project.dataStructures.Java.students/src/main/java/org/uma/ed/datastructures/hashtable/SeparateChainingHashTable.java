@@ -112,14 +112,14 @@ public class SeparateChainingHashTable<K> implements HashTable<K> {
    * <p> Time complexity: O(1)
    */
   @Override
-  public boolean isEmpty() { throw new UnsupportedOperationException("Not implemented yet"); }
+  public boolean isEmpty() { return size == 0; }
 
   /**
    * {@inheritDoc}
    * <p> Time complexity: O(1)
    */
   @Override
-  public int size() { throw new UnsupportedOperationException("Not implemented yet"); }
+  public int size() { return size; }
 
   /**
    * Primary hash function to map a key to a chain index.
@@ -164,35 +164,75 @@ public class SeparateChainingHashTable<K> implements HashTable<K> {
    * <p> Time complexity: Near O(1) on average. Can be O(n) if rehashing occurs.
    */
   @Override
-  public void insert(K key) { throw new UnsupportedOperationException("Not implemented yet"); }
+  public void insert(K key) {
+    if (loadFactor() > maxLoadFactor){
+      rehashing();
+    }
+    Finder finder = new Finder(key);
+    if (finder.current == null){
+      //Key is not in the table
+      Node<K> node = new Node<>(key, table[finder.index]);
+      table[finder.index] = node;
+      size++;
+    }
+    else {
+      //Key is in the table
+      finder.current.key = key;
+
+    }
+  }
 
   /**
    * {@inheritDoc}
    * <p> Time complexity: Near O(1) on average.
    */
   @Override
-  public K search(K key) { throw new UnsupportedOperationException("Not implemented yet"); }
+  public K search(K key) {
+    Finder finder = new Finder(key);
+    return (finder.current == null) ? null : finder.current.key;
+  }
 
   /**
    * {@inheritDoc}
    * <p> Time complexity: Near O(1) on average.
    */
   @Override
-  public boolean contains(K key) { throw new UnsupportedOperationException("Not implemented yet"); }
+  public boolean contains(K key) {
+    return search(key) != null;
+  }
 
   /**
    * {@inheritDoc}
    * <p> Time complexity: near O(1) on average.
    */
   @Override
-  public void delete(K key) { throw new UnsupportedOperationException("Not implemented yet"); }
+  public void delete(K key) {
+    Finder finder = new Finder(key);
+
+    if (finder.current != null){
+      //key is in the table
+      if (finder.previous == null){
+        //key is at the beginning of the list
+        table[finder.index] = finder.current.next;
+      }else{
+        //key is not the first
+        finder.previous.next = finder.current.next;
+      }
+      size--;
+    }
+  }
 
   /**
    * {@inheritDoc}
    * <p> Time complexity: O(c) where c is the number of chains (to reset the table).
    */
   @Override
-  public void clear() { throw new UnsupportedOperationException("Not implemented yet"); }
+  public void clear() {
+    for(int i = 0; i < size; i++){
+      table[i] = null;
+    }
+    size = 0;
+  }
 
   /**
    * Doubles the table size and re-inserts all keys into the new table.
