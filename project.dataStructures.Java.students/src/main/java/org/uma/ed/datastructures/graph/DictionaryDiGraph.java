@@ -70,7 +70,7 @@ public class DictionaryDiGraph<V> implements DiGraph<V> {
    * @param diGraph The directed graph to be copied.
    * @return A new {@code DictionaryDiGraph} with the same vertices and edges.
    */
-  public static <V> DictionaryDiGraph<V> copyOf(DiGraph<V> diGraph) { throw new UnsupportedOperationException("Not implemented yet"); }
+  public static <V> DictionaryDiGraph<V> copyOf(DiGraph<V> diGraph) { return DictionaryDiGraph.of(diGraph.vertices(),diGraph.edges()); }
 
   @Override
   public boolean isEmpty() { return successorsOf.isEmpty(); }
@@ -87,12 +87,12 @@ public class DictionaryDiGraph<V> implements DiGraph<V> {
     Set<V> setForSource = successorsOf.valueOf(source);
     if(setForSource == null){
       // source is not in graph
-      throw new GraphException("addDiEdge: source "+ source+" is not in the graph.");
+      throw new GraphException("addDiEdge: source vertex "+ source+" is not in the graph.");
     }
     Set<V> setForDestination = successorsOf.valueOf(destination);
     if(setForDestination == null){
       // destination is not in graph
-      throw new GraphException("addDiEdge: destination "+ destination+" is not in the graph.");
+      throw new GraphException("addDiEdge: destination vertex "+ destination+" is not in the graph.");
     }
     setForSource.insert(destination);
 
