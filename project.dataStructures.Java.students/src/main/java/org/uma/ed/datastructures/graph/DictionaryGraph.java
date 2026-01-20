@@ -2,6 +2,7 @@ package org.uma.ed.datastructures.graph;
 
 import org.uma.ed.datastructures.dictionary.Dictionary;
 import org.uma.ed.datastructures.dictionary.JDKHashDictionary;
+import org.uma.ed.datastructures.set.JDKHashSet;
 import org.uma.ed.datastructures.set.Set;
 
 import java.util.StringJoiner;
@@ -70,40 +71,125 @@ public class DictionaryGraph<V> implements Graph<V> {
    * @param graph The graph to be copied.
    * @return A new {@code DictionaryGraph} with the same vertices and edges.
    */
-  public static <V> DictionaryGraph<V> copyOf(Graph<V> graph) { throw new UnsupportedOperationException("Not implemented yet"); }
+  public static <V> DictionaryGraph<V> copyOf(Graph<V> graph) {
+    Set<V> vertices = graph.vertices();
+    Set<Edge<V>> edges = graph.edges();
+    DictionaryGraph<V> copy = DictionaryGraph.of(vertices,edges);
+    return copy;
+  }
 
   @Override
-  public boolean isEmpty() { throw new UnsupportedOperationException("Not implemented yet"); }
+  public boolean isEmpty() { return adjacentsOf.isEmpty(); }
 
   @Override
-  public void addVertex(V vertex) { throw new UnsupportedOperationException("Not implemented yet"); }
+  public void addVertex(V vertex) {
+    Set<V> succesorsOfVertex = adjacentsOf.valueOf(vertex);
+
+    if(succesorsOfVertex == null){
+      //vertex was not yet in graph
+      adjacentsOf.insert(vertex, JDKHashSet.empty());
+    }else{
+      //vertex is already in the graph
+      adjacentsOf.insert(vertex,succesorsOfVertex);
+      for(V v: succesorsOfVertex){
+        Set<V> setForV = adjacentsOf.valueOf(v);
+        setForV.insert(vertex);
+      }
+    }
+  }
 
   @Override
-  public void addEdge(V vertex1, V vertex2) { throw new UnsupportedOperationException("Not implemented yet"); }
+  public void addEdge(V vertex1, V vertex2) {
+    Set<V> setForVertex1 = adjacentsOf.valueOf(vertex1);
+    if(setForVertex1 == null){
+      // vertex1 is not in graph
+      throw new GraphException("addEdge: vertex "+vertex1+" is not in the graph.");
+    }
+    Set<V> setForVertex2 = adjacentsOf.valueOf(vertex2);
+    if(setForVertex2 == null){
+      //vertex2 is not in graph
+      throw new GraphException("addEdge: vertex "+vertex2+" is not in the graph.");
+    }
+    setForVertex1.insert(vertex2);
+    setForVertex2.insert(vertex1);
+  }
 
   @Override
-  public void deleteEdge(V vertex1, V vertex2) { throw new UnsupportedOperationException("Not implemented yet"); }
+  public void deleteEdge(V vertex1, V vertex2) {
+    Set<V> setForVertex1 = adjacentsOf.valueOf(vertex1);
+    if(setForVertex1 == null){
+      // vertex1 is not in graph
+      throw new GraphException("Vertex "+vertex1+" is not in graph");
+    }
+    Set<V> setForVertex2 = adjacentsOf.valueOf(vertex2);
+    if(setForVertex2 == null){
+      //vertex2 is not in graph
+      throw new GraphException("Vertex "+vertex2+" is not in graph");
+    }
+    setForVertex1.delete(vertex2);
+    setForVertex2.delete(vertex1);
+  }
 
   @Override
-  public void deleteVertex(V vertex) { throw new UnsupportedOperationException("Not implemented yet"); }
+  public void deleteVertex(V vertex) {
+    Set<V> setForVertex = adjacentsOf.valueOf(vertex);
+
+    if(setForVertex != null){
+      // vertex is in graph: remove it
+      adjacentsOf.delete(vertex);
+      for(V v : setForVertex){
+        Set<V> setForV = adjacentsOf.valueOf(v);
+        setForV.delete(vertex);
+      }
+    }
+  }
 
   @Override
-  public Set<V> vertices() { throw new UnsupportedOperationException("Not implemented yet"); }
+  public Set<V> vertices() { return JDKHashSet.from(adjacentsOf.keys()); }
 
   @Override
-  public Set<Edge<V>> edges() { throw new UnsupportedOperationException("Not implemented yet"); }
+  public Set<Edge<V>> edges() {
+    Set<Edge<V>> setEdges = JDKHashSet.empty();
+    for(var entry: adjacentsOf.entries()){
+      V key = entry.key();
+      for(V value : entry.value()){
+        Edge<V> edge = Edge.of(key,value);
+        setEdges.insert(edge);
+      }
+    }
+    return setEdges;
+  }
 
   @Override
-  public int numberOfVertices() { throw new UnsupportedOperationException("Not implemented yet"); }
+  public int numberOfVertices() { return adjacentsOf.size(); }
 
   @Override
-  public int numberOfEdges() { throw new UnsupportedOperationException("Not implemented yet"); }
+  public int numberOfEdges() {
+    int count = 0;
+    for(Set<V> set : adjacentsOf.values()){
+      count += set.size();
+    }
+    return count/2;
+  }
 
   @Override
-  public Set<V> successors(V vertex) { throw new UnsupportedOperationException("Not implemented yet"); }
+  public Set<V> successors(V vertex) {
+    Set<V> succs = adjacentsOf.valueOf(vertex);
+    if(succs == null){
+      throw new GraphException("successors: vertex "+vertex+" is not in the graph.");
+    }
+    return JDKHashSet.copyOf(succs);
+  }
 
   @Override
-  public int degree(V vertex) { throw new UnsupportedOperationException("Not implemented yet"); }
+  public int degree(V vertex) {
+    Set<V> succs = adjacentsOf.valueOf(vertex);
+
+    if(succs == null){
+      throw new GraphException("degree: vertex "+vertex+" is not in the graph.");
+    }
+    return succs.size();
+  }
 
   @Override
   public String toString() {
