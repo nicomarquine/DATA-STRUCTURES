@@ -61,8 +61,37 @@ public final class Dijkstra {
    * @param source        the source vertex.
    * @return a {@code Dictionary} mapping reachable vertices to their shortest path costs.
    */
-  public static <V> Dictionary<V, Integer> dijkstra(
-      WeightedGraph<V, Integer> weightedGraph, V source) { throw new UnsupportedOperationException("Not implemented yet");  }
+  public static <V> Dictionary<V, Integer> dijkstra(WeightedGraph<V, Integer> weightedGraph, V source) {
+    Set<V> vertices = JDKHashSet.copyOf(weightedGraph.vertices());
+    vertices.delete(source);
+    Set<V> verticesOpt = JDKHashSet.of(source);
+    Dictionary<V,Integer> opt = JDKHashDictionary.of(Dictionary.Entry.of(source,0));
+    PriorityQueue<Extension<V>> pq = JDKPriorityQueue.empty();
+    for(WeightedGraph.Successor<V,Integer> succ : weightedGraph.successors(source)){
+      Extension<V> ext = Extension.of(source, succ.vertex(), succ.weight());
+      pq.enqueue(ext);
+    }
+    while(!pq.isEmpty() && !vertices.isEmpty()){
+      Extension<V> first = pq.first();
+      pq.dequeue();
+      V destination = first.destination;
+      if(!verticesOpt.contains(destination)){
+        vertices.delete(destination);
+        verticesOpt.insert(destination);
+        int costOpt = first.totalCost;
+        opt.insert(Dictionary.Entry.of(destination, costOpt));
+        for(WeightedGraph.Successor<V,Integer> neighbour : weightedGraph.successors(destination)){
+          V vertex = neighbour.vertex();
+          if(vertices.contains(vertex)){
+            int weight = neighbour.weight();
+            Extension<V> ext = Extension.of(destination, vertex, weight+costOpt);
+            pq.enqueue(ext);
+          }
+        }
+      }
+    }
+    return opt;
+  }
 
   /**
    * A version of Extension that also carries the full path from the source.
@@ -87,6 +116,44 @@ public final class Dijkstra {
    * @return a {@code Dictionary} mapping reachable vertices to a pair containing the
    *         minimum cost and the list of vertices in the shortest path.
    */
-  public static <V> Dictionary<V, Tuple2<Integer, List<V>>> dijkstraPaths(
-      WeightedGraph<V, Integer> weightedGraph, V source) { throw new UnsupportedOperationException("Not implemented yet"); }
+  public static <V> Dictionary<V, Tuple2<Integer, List<V>>> dijkstraPaths(WeightedGraph<V, Integer> weightedGraph, V source) {
+    Set<V> vertices = JDKHashSet.copyOf(weightedGraph.vertices());
+    vertices.delete(source);
+    Set<V> verticesOpt = JDKHashSet.of(source);
+    Dictionary<V, Tuple2<Integer, List<V>>> opt = JDKHashDictionary.of(Dictionary.Entry.of(source, Tuple2.of(0, JDKArrayList.of(source))));
+    PriorityQueue<PathExtension<V>> pq = JDKPriorityQueue.empty();
+    for(WeightedGraph.Successor<V, Integer> succ : weightedGraph.successors(source)){
+      List<V> path = JDKArrayList.of(source);
+      path.append(succ.vertex());
+
+      PathExtension<V> ext = PathExtension.of(source,succ.vertex(),succ.weight(),path);
+      pq.enqueue(ext);
+    }
+    while(!vertices.isEmpty()&&!pq.isEmpty()){
+      PathExtension<V> first = pq.first();
+      pq.dequeue();
+      V destination = first.destination;
+      if(!verticesOpt.contains(destination)){
+        vertices.delete(destination);
+        verticesOpt.insert(destination);
+        int costOpt = first.totalCost;
+        opt.insert(Dictionary.Entry.of(destination,Tuple2.of(costOpt,first.path)));
+        for(WeightedGraph.Successor<V, Integer> neighbor: weightedGraph.successors(destination)){
+          V vertex = neighbor.vertex();
+          if(vertices.contains(vertex)){
+            List<V> newPath = JDKArrayList.empty();
+            for(V x:first.path){
+              newPath.append(x);
+            }
+            newPath.append(vertex);
+            int weight = neighbor.weight();
+            PathExtension<V> ext = PathExtension.of(destination,vertex,weight+costOpt,newPath);
+            pq.enqueue(ext);
+
+          }
+        }
+      }
+    }
+    return opt;
+  }
 }
