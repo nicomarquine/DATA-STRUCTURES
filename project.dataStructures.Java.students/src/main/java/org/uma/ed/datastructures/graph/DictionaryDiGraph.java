@@ -2,6 +2,7 @@ package org.uma.ed.datastructures.graph;
 
 import org.uma.ed.datastructures.dictionary.Dictionary;
 import org.uma.ed.datastructures.dictionary.JDKHashDictionary;
+import org.uma.ed.datastructures.set.JDKHashSet;
 import org.uma.ed.datastructures.set.Set;
 
 import java.util.StringJoiner;
@@ -72,43 +73,117 @@ public class DictionaryDiGraph<V> implements DiGraph<V> {
   public static <V> DictionaryDiGraph<V> copyOf(DiGraph<V> diGraph) { throw new UnsupportedOperationException("Not implemented yet"); }
 
   @Override
-  public boolean isEmpty() { throw new UnsupportedOperationException("Not implemented yet"); }
+  public boolean isEmpty() { return successorsOf.isEmpty(); }
 
   @Override
-  public void addVertex(V vertex) { throw new UnsupportedOperationException("Not implemented yet"); }
+  public void addVertex(V vertex) {
+    if(successorsOf.valueOf(vertex) == null){
+      successorsOf.insert(vertex, JDKHashSet.empty());
+    }
+  }
 
   @Override
-  public void addDiEdge(V source, V destination) { throw new UnsupportedOperationException("Not implemented yet"); }
+  public void addDiEdge(V source, V destination) {
+    Set<V> setForSource = successorsOf.valueOf(source);
+    if(setForSource == null){
+      // source is not in graph
+      throw new GraphException("addDiEdge: source "+ source+" is not in the graph.");
+    }
+    Set<V> setForDestination = successorsOf.valueOf(destination);
+    if(setForDestination == null){
+      // destination is not in graph
+      throw new GraphException("addDiEdge: destination "+ destination+" is not in the graph.");
+    }
+    setForSource.insert(destination);
+
+  }
 
   @Override
-  public void deleteDiEdge(V source, V destination) { throw new UnsupportedOperationException("Not implemented yet"); }
+  public void deleteDiEdge(V source, V destination) {
+    Set<V> setForSource = successorsOf.valueOf(source);
+    if(setForSource == null){
+      // source is not in graph
+      throw new GraphException("deleteDiEdge: source "+ source+" is not in the graph,");
+    }
+    Set<V> setForDestination = successorsOf.valueOf(destination);
+    if(setForDestination == null){
+      // destination is not in graph
+      throw new GraphException("deleteDiEdge: destination "+ destination+" is not in the graph.");
+    }
+    setForSource.delete(destination);
+  }
 
   @Override
-  public void deleteVertex(V vertex) { throw new UnsupportedOperationException("Not implemented yet"); }
+  public void deleteVertex(V vertex) {
+    if(successorsOf.valueOf(vertex) != null){
+      successorsOf.delete(vertex);
+      // We remove entries
+      for(var entry: successorsOf.entries()){
+        entry.value().delete(vertex);
+      }
+    }
+  }
 
   @Override
-  public Set<V> vertices() { throw new UnsupportedOperationException("Not implemented yet"); }
+  public Set<V> vertices() { return JDKHashSet.from(successorsOf.keys()); }
 
   @Override
-  public Set<DiEdge<V>> edges() { throw new UnsupportedOperationException("Not implemented yet"); }
+  public Set<DiEdge<V>> edges() {
+    Set<DiEdge<V>> edges = JDKHashSet.empty();
+
+    for(var entry: successorsOf.entries()){
+      V source = entry.key();
+      for(V destination: entry.value()){
+        edges.insert(DiEdge.of(source,destination));
+      }
+    }
+    return edges;
+  }
 
   @Override
-  public int numberOfVertices() { throw new UnsupportedOperationException("Not implemented yet"); }
+  public int numberOfVertices() { return successorsOf.size();  }
 
   @Override
-  public int numberOfEdges() { throw new UnsupportedOperationException("Not implemented yet"); }
+  public int numberOfEdges() {
+    int numberOfEdges = 0;
+    for(Set<V> successors: successorsOf.values()){
+      numberOfEdges += successors.size();
+    }
+    return numberOfEdges;
+  }
 
   @Override
-  public Set<V> successors(V source) { throw new UnsupportedOperationException("Not implemented yet"); }
+  public Set<V> successors(V source) {
+    Set<V> successors = successorsOf.valueOf(source);
+    if(successors == null){
+      throw new GraphException("successors: vertex "+source+ " is not in the the graph.");
+    }
+    return JDKHashSet.copyOf(successors);
+  }
 
   @Override
-  public Set<V> predecessors(V destination) { throw new UnsupportedOperationException("Not implemented yet"); }
+  public Set<V> predecessors(V destination) {
+    if(successorsOf.valueOf(destination) == null){
+      throw new GraphException("predecessors: vertex "+ destination+ " is not in the graph.");
+    }
+    Set<V> predecessors = JDKHashSet.empty();
+
+    // We go through every successors list
+    for(var entry: successorsOf.entries()){
+      V source = entry.key();
+      Set<V> successors = entry.value();
+      if(successors.contains(destination)){
+        predecessors.insert(source);
+      }
+    }
+    return predecessors;
+  }
 
   @Override
-  public int inDegree(V vertex) { throw new UnsupportedOperationException("Not implemented yet"); }
+  public int inDegree(V vertex) { return predecessors(vertex).size();}
 
   @Override
-  public int outDegree(V vertex) { throw new UnsupportedOperationException("Not implemented yet"); }
+  public int outDegree(V vertex) { return successors(vertex).size(); }
 
   @Override
   public String toString() {
